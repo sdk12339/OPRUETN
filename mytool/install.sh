@@ -1,35 +1,166 @@
-#!/bin/bash
+#!/data/data/com.termux/files/usr/bin/bash
+# =============================================================================
+# Termux OSINT & Security Framework v2.0 - 통합 설치 스크립트
+# =============================================================================
+# 이 스크립트는 Termux 환경에서 OSINT 툴 실행에 필요한 모든 패키지와
+# Python 라이브러리를 자동으로 설치합니다.
+# =============================================================================
 
-# Termux OSINT & Security Framework 설치 스크립트
+# ANSI 색상 코드
+RED='\033[91m'
+GREEN='\033[92m'
+YELLOW='\033[93m'
+CYAN='\033[96m'
+BOLD='\033[1m'
+RESET='\033[0m'
 
-echo -e "\033[96m\033[1m"
-echo "   ___ ____  ____  _   _ _____ _____ _____ _   _ "
-echo "  / _ \___ \|  _ \| | | | ____|_   _|_   _| \ | |"
-echo " | | | |__) | |_) | | | |  _|   | |   | | |  \| |"
-echo " | |_| / __/|  _ <| |_| | |___  | |   | | | |\  |"
-echo "  \___/_____|_| \_\\___/|_____| |_|   |_| |_| \_|"
-echo "\n        - Termux OSINT & Security Framework Installer -"
-echo -e "\033[0m"
-echo -e "\033[95m\033[1m=====================================================\033[0m"
-echo -e "\033[97m  필요한 패키지 및 라이브러리를 설치합니다.\033[0m"
-echo -e "\033[95m\033[1m=====================================================\033[0m\n"
+# 배너 출력
+echo ""
+echo -e "${CYAN}${BOLD}"
+echo "  ___  ____  ___ _   _ _____   _____ ___   ___  _     "
+echo " / _ \/ ___||_ _| \ | |_   _| |_   _/ _ \ / _ \| |    "
+echo "| | | \___ \ | ||  \| | | |     | || | | | | | | |    "
+echo "| |_| |___) || || |\  | | |     | || |_| | |_| | |___ "
+echo " \___/|____/___|_| \_| |_|     |_| \___/ \___/|_____|"
+echo ""
+echo -e "${YELLOW}  Termux OSINT & Security Framework v2.0 - 자동 설치 스크립트${RESET}"
+echo -e "${CYAN}${BOLD}======================================================${RESET}"
+echo ""
 
-# 1. Termux 기본 패키지 업데이트 및 업그레이드
-echo -e "\033[93m[+] Termux 기본 패키지 업데이트 및 업그레이드...\033[0m"
-pkg update -y && pkg upgrade -y
+# 운영 환경 확인 (Termux 여부)
+if [ ! -d "/data/data/com.termux" ]; then
+    echo -e "${YELLOW}[!] Termux 환경이 아닌 것 같습니다. 일반 Linux 환경으로 설치를 진행합니다.${RESET}"
+    IS_TERMUX=false
+else
+    echo -e "${GREEN}[+] Termux 환경 감지됨.${RESET}"
+    IS_TERMUX=true
+fi
 
-# 2. 필요한 시스템 도구 설치
-echo -e "\033[93m[+] 필요한 시스템 도구 설치 (git, python, whois, traceroute)...\033[0m"
-pkg install git python whois traceroute -y
+# 오류 발생 시 중단 (선택적)
+set -e
 
+# =============================================================================
+# 1. 시스템 패키지 업데이트
+# =============================================================================
+echo ""
+echo -e "${CYAN}${BOLD}[1/4] 시스템 패키지 업데이트 중...${RESET}"
+echo -e "${YELLOW}[*] 패키지 목록을 업데이트합니다...${RESET}"
+
+if $IS_TERMUX; then
+    pkg update -y && pkg upgrade -y
+else
+    sudo apt update -y && sudo apt upgrade -y
+fi
+
+echo -e "${GREEN}[+] 시스템 패키지 업데이트 완료.${RESET}"
+
+# =============================================================================
+# 2. 필수 시스템 패키지 설치
+# =============================================================================
+echo ""
+echo -e "${CYAN}${BOLD}[2/4] 필수 시스템 패키지 설치 중...${RESET}"
+
+SYSTEM_PACKAGES=(
+    "python"
+    "python-pip"
+    "curl"
+    "wget"
+    "git"
+    "whois"
+    "traceroute"
+    "nmap"
+    "openssl"
+    "net-tools"
+    "dnsutils"
+)
+
+for pkg_name in "${SYSTEM_PACKAGES[@]}"; do
+    echo -e "${YELLOW}[*] 설치 중: ${pkg_name}${RESET}"
+    if $IS_TERMUX; then
+        pkg install "$pkg_name" -y 2>/dev/null || echo -e "${RED}[-] ${pkg_name} 설치 실패 (건너뜀)${RESET}"
+    else
+        sudo apt install "$pkg_name" -y 2>/dev/null || echo -e "${RED}[-] ${pkg_name} 설치 실패 (건너뜀)${RESET}"
+    fi
+done
+
+echo -e "${GREEN}[+] 시스템 패키지 설치 완료.${RESET}"
+
+# =============================================================================
 # 3. Python 라이브러리 설치
-echo -e "\033[93m[+] 필요한 Python 라이브러리 설치 (requests, beautifulsoup4, Pillow, ipaddress, scapy)...\033[0m"
-pip install requests beautifulsoup4 Pillow ipaddress scapy
+# =============================================================================
+echo ""
+echo -e "${CYAN}${BOLD}[3/4] Python 라이브러리 설치 중...${RESET}"
 
-# Scapy 설치 시 경고 메시지 처리 (루트 권한 관련)
-echo -e "\033[92m\n[!] Scapy는 일부 기능(예: ARP 스캔)에 루트 권한이 필요할 수 있습니다.\033[0m"
-echo -e "\033[92m    Termux 환경에서는 제한적일 수 있으며, 개념 증명용으로 사용됩니다.\033[0m\n"
+# pip 최신 버전으로 업그레이드
+echo -e "${YELLOW}[*] pip 업그레이드 중...${RESET}"
+pip install --upgrade pip 2>/dev/null || pip3 install --upgrade pip 2>/dev/null
 
-echo -e "\033[92m\033[1m[+] 모든 설치가 완료되었습니다!\033[0m"
-echo -e "\033[97m이제 'python osint_tool.py' 명령어로 도구를 실행할 수 있습니다.\033[0m"
-echo -e "\033[97m도움말을 보려면 도구 실행 후 '11'을 선택하세요.\033[0m\n"
+PYTHON_PACKAGES=(
+    "requests"
+    "beautifulsoup4"
+    "lxml"
+    "colorama"
+    "dnspython"
+    "python-whois"
+    "urllib3"
+    "certifi"
+)
+
+for py_pkg in "${PYTHON_PACKAGES[@]}"; do
+    echo -e "${YELLOW}[*] pip 설치 중: ${py_pkg}${RESET}"
+    pip install "$py_pkg" 2>/dev/null || pip3 install "$py_pkg" 2>/dev/null || echo -e "${RED}[-] ${py_pkg} 설치 실패 (건너뜀)${RESET}"
+done
+
+echo -e "${GREEN}[+] Python 라이브러리 설치 완료.${RESET}"
+
+# =============================================================================
+# 4. 설치 검증 및 실행 권한 부여
+# =============================================================================
+echo ""
+echo -e "${CYAN}${BOLD}[4/4] 설치 검증 및 실행 권한 설정 중...${RESET}"
+
+# Python 버전 확인
+PYTHON_VERSION=$(python --version 2>&1 || python3 --version 2>&1)
+echo -e "${GREEN}[+] Python 버전: ${PYTHON_VERSION}${RESET}"
+
+# 필수 모듈 임포트 테스트
+echo -e "${YELLOW}[*] 핵심 Python 모듈 임포트 테스트 중...${RESET}"
+python -c "import requests; print('[+] requests: OK')" 2>/dev/null || \
+    python3 -c "import requests; print('[+] requests: OK')" 2>/dev/null || \
+    echo -e "${RED}[-] requests 모듈 임포트 실패${RESET}"
+
+python -c "from bs4 import BeautifulSoup; print('[+] beautifulsoup4: OK')" 2>/dev/null || \
+    python3 -c "from bs4 import BeautifulSoup; print('[+] beautifulsoup4: OK')" 2>/dev/null || \
+    echo -e "${RED}[-] beautifulsoup4 모듈 임포트 실패${RESET}"
+
+python -c "import socket, hashlib, ssl, json; print('[+] 표준 라이브러리 (socket, hashlib, ssl, json): OK')" 2>/dev/null || \
+    python3 -c "import socket, hashlib, ssl, json; print('[+] 표준 라이브러리 (socket, hashlib, ssl, json): OK')" 2>/dev/null
+
+# 스크립트 실행 권한 부여
+if [ -f "osint_tool_updated.py" ]; then
+    chmod +x osint_tool_updated.py
+    echo -e "${GREEN}[+] osint_tool_updated.py 실행 권한 설정 완료.${RESET}"
+fi
+
+# =============================================================================
+# 설치 완료 안내
+# =============================================================================
+echo ""
+echo -e "${CYAN}${BOLD}======================================================"
+echo -e "  설치가 완료되었습니다!"
+echo -e "======================================================${RESET}"
+echo ""
+echo -e "${GREEN}[+] 실행 방법:${RESET}"
+echo -e "    ${YELLOW}python osint_tool_updated.py${RESET}"
+echo -e "    또는"
+echo -e "    ${YELLOW}python3 osint_tool_updated.py${RESET}"
+echo ""
+echo -e "${YELLOW}[!] Termux 환경에서의 주요 제약사항:${RESET}"
+echo -e "    - 1024 이하 포트 바인딩 불가 (루트 권한 필요)"
+echo -e "    - traceroute 등 일부 명령어는 루트 권한이 필요할 수 있습니다."
+echo -e "    - 배터리 최적화로 인해 장시간 실행 시 프로세스가 종료될 수 있습니다."
+echo -e "      (Termux 앱 설정 > 배터리 최적화 예외 등록 권장)"
+echo ""
+echo -e "${RED}[!] 주의사항: 이 도구는 교육 및 보안 학습 목적으로만 사용하십시오."
+echo -e "    인가되지 않은 시스템에 대한 공격은 법적 처벌을 받을 수 있습니다.${RESET}"
+echo ""
