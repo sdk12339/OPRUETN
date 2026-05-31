@@ -1,6 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # =============================================================================
-# Termux OSINT & Security Framework v2.0 - 통합 설치 스크립트
+# Termux OSINT & Security Framework v3.0 - 통합 설치 스크립트
 # =============================================================================
 # 이 스크립트는 Termux 환경에서 OSINT 툴 실행에 필요한 모든 패키지와
 # Python 라이브러리를 자동으로 설치합니다.
@@ -23,7 +23,7 @@ echo "| | | \___ \ | ||  \| | | |     | || | | | | | | |    "
 echo "| |_| |___) || || |\  | | |     | || |_| | |_| | |___ "
 echo " \___/|____/___|_| \_| |_|     |_| \___/ \___/|_____|"
 echo ""
-echo -e "${YELLOW}  Termux OSINT & Security Framework v2.0 - 자동 설치 스크립트${RESET}"
+echo -e "${YELLOW}  Termux OSINT & Security Framework v3.0 - 자동 설치 스크립트${RESET}"
 echo -e "${CYAN}${BOLD}======================================================${RESET}"
 echo ""
 
@@ -133,13 +133,10 @@ python -c "from bs4 import BeautifulSoup; print('[+] beautifulsoup4: OK')" 2>/de
     python3 -c "from bs4 import BeautifulSoup; print('[+] beautifulsoup4: OK')" 2>/dev/null || \
     echo -e "${RED}[-] beautifulsoup4 모듈 임포트 실패${RESET}"
 
-python -c "import socket, hashlib, ssl, json; print('[+] 표준 라이브러리 (socket, hashlib, ssl, json): OK')" 2>/dev/null || \
-    python3 -c "import socket, hashlib, ssl, json; print('[+] 표준 라이브러리 (socket, hashlib, ssl, json): OK')" 2>/dev/null
-
 # 스크립트 실행 권한 부여
-if [ -f "osint_tool_updated.py" ]; then
-    chmod +x osint_tool_updated.py
-    echo -e "${GREEN}[+] osint_tool_updated.py 실행 권한 설정 완료.${RESET}"
+if [ -f "osint_tool_v3.py" ]; then
+    chmod +x osint_tool_v3.py
+    echo -e "${GREEN}[+] osint_tool_v3.py 실행 권한 설정 완료.${RESET}"
 fi
 
 # =============================================================================
@@ -147,19 +144,18 @@ fi
 # =============================================================================
 echo ""
 echo -e "${CYAN}${BOLD}======================================================"
-echo -e "  설치가 완료되었습니다!"
+echo -e "  설치가 완료되었습니다! (V3.0 Advanced)"
 echo -e "======================================================${RESET}"
 echo ""
 echo -e "${GREEN}[+] 실행 방법:${RESET}"
-echo -e "    ${YELLOW}python osint_tool_updated.py${RESET}"
+echo -e "    ${YELLOW}python osint_tool_v3.py${RESET}"
 echo -e "    또는"
-echo -e "    ${YELLOW}python3 osint_tool_updated.py${RESET}"
+echo -e "    ${YELLOW}python3 osint_tool_v3.py${RESET}"
 echo ""
-echo -e "${YELLOW}[!] Termux 환경에서의 주요 제약사항:${RESET}"
-echo -e "    - 1024 이하 포트 바인딩 불가 (루트 권한 필요)"
-echo -e "    - traceroute 등 일부 명령어는 루트 권한이 필요할 수 있습니다."
-echo -e "    - 배터리 최적화로 인해 장시간 실행 시 프로세스가 종료될 수 있습니다."
-echo -e "      (Termux 앱 설정 > 배터리 최적화 예외 등록 권장)"
+echo -e "${YELLOW}[!] V3.0 주요 업데이트:${RESET}"
+echo -e "    - 멀티 언어(Shell, Python, JS, C, Java, Go, PHP 등) 페이로드 라이브러리"
+echo -e "    - 웹 해킹 및 취약점 우회 페이로드(XSS, SQLi, LFI, SSTI) 추가"
+echo -e "    - 고도화된 웹 취약점 스캐너 및 네트워크 분석 기능 통합"
 echo ""
 echo -e "${RED}[!] 주의사항: 이 도구는 교육 및 보안 학습 목적으로만 사용하십시오."
 echo -e "    인가되지 않은 시스템에 대한 공격은 법적 처벌을 받을 수 있습니다.${RESET}"

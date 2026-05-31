@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprehensive OSINT & Security Report - b</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; padding: 20px; line-height: 1.6; }
+        .container { max-width: 1000px; margin: auto; background: #161b22; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        h1 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; text-align: center; }
+        h2 { color: #f0883e; margin-top: 30px; border-bottom: 1px dashed #30363d; padding-bottom: 5px; }
+        h3 { color: #79c0ff; margin-top: 20px; }
+        .section { margin-bottom: 25px; padding: 15px; background: #0d1117; border-radius: 8px; border: 1px solid #30363d; }
+        .subsection { margin-left: 20px; margin-top: 10px; padding: 10px; background: #010409; border-left: 3px solid #f0883e; border-radius: 5px; }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { display: flex; align-items: center; font-size: 0.95em; margin-bottom: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; flex-shrink: 0; }
+        pre { background: #010409; padding: 15px; border-radius: 5px; overflow-x: auto; color: #8b949e; font-size: 0.85em; white-space: pre-wrap; word-wrap: break-word; border: 1px solid #30363d; }
+        .footer { text-align: center; margin-top: 40px; font-size: 0.8em; color: #8b949e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Comprehensive OSINT & Security Report</h1>
+        <p><strong>Target:</strong> b | <strong>Scan Time:</strong> 2026-06-01 03:01:28</p>
+        
+        <div class="section">
+            <h2>1. Information Gathering</h2>
+            <div class="subsection"><h3>WHOIS Information</h3><pre>WHOIS 정보 조회 실패: Command '['whois', 'b']' returned non-zero exit status 1.
+(Tip: Termux에서는 'pkg install whois'가 필요할 수 있습니다.)</pre></div>
+            <div class="subsection"><h3>DNS Information</h3><pre>"DNS 정보 조회 실패: b에 대한 IP 주소를 찾을 수 없습니다."</pre></div>
+            <div class="subsection"><h3>IP Geolocation</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+            <div class="subsection"><h3>Subdomain Finder</h3><pre>"서브도메인 없음"</pre></div>
+            <div class="subsection"><h3>Email Harvester</h3><pre>"이메일 수집 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+            <div class="subsection"><h3>SSL Certificate Info</h3><pre>"SSL 인증서 정보 조회 실패: [Errno 7] No address associated with hostname"</pre></div>
+            <div class="subsection"><h3>Reverse IP & Shared Hosting</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+            <div class="subsection"><h3>Google Dorks</h3><pre>{
+    "Google Dorks": [
+        "site:b intitle:\"index of\"",
+        "site:b inurl:admin",
+        "site:b inurl:login",
+        "site:b filetype:pdf confidential",
+        "site:b intext:\"password\"",
+        "site:b ext:log | ext:txt | ext:sql",
+        "site:b inurl:wp-content | inurl:wp-includes"
+    ]
+}</pre></div>
+        </div>
+
+        <div class="section">
+            <h2>2. Web Analysis & Vulnerabilities</h2>
+            <div class="subsection"><h3>Web Technology Stack</h3><p>웹 기술 분석 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError("HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)"))</p></div>
+            <div class="subsection"><h3>WAF Detection</h3><pre>"WAF 감지 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+            <div class="subsection"><h3>Security Headers</h3><pre>"보안 헤더 분석 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+            <div class="subsection"><h3>Clickjacking Test</h3><p>Clickjacking 테스트 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError("HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)"))</p></div>
+            <div class="subsection"><h3>Open Redirect Check</h3><p>Open Redirect 테스트 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: /?redirect=//google.com (Caused by NameResolutionError("HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)"))</p></div>
+            <div class="subsection"><h3>CORS Misconfiguration Check</h3><p>CORS 분석 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError("HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)"))</p></div>
+            <div class="subsection"><h3>Robots.txt Analysis</h3><pre>"robots.txt 분석 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: /robots.txt (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+            <div class="subsection"><h3>Sitemap.xml Finder</h3><pre>"sitemap.xml 찾기 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: /sitemap.xml (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+            <div class="subsection"><h3>XSS & SQLi Scanner (PoC)</h3><pre>{
+    "SQL Injection": "안전함 (또는 탐지되지 않음)",
+    "XSS (Cross-Site Scripting)": "안전함 (또는 탐지되지 않음)"
+}</pre></div>
+            <div class="subsection"><h3>CMS Scanner & Version Analysis</h3><pre>"CMS 스캔 실패: HTTPConnectionPool(host='b', port=80): Max retries exceeded with url: / (Caused by NameResolutionError(\"HTTPConnection(host='b', port=80): Failed to resolve 'b' ([Errno 7] No address associated with hostname)\"))"</pre></div>
+        </div>
+
+        <div class="section">
+            <h2>3. Network Security</h2>
+            <div class="subsection"><h3>Port Scan</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+            <div class="subsection"><h3>Service Version Detection (Banner Grabbing)</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+            <div class="subsection"><h3>FTP Anonymous Login Check</h3><p>IP 주소를 찾을 수 없어 건너뜁니다.</p></div>
+            <div class="subsection"><h3>Traceroute</h3><pre>IP 주소를 찾을 수 없어 건너뜁니다.</pre></div>
+            <div class="subsection"><h3>Ping Sweep</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+            <div class="subsection"><h3>Network Latency Check</h3><pre>"IP 주소를 찾을 수 없어 건너뜁니다."</pre></div>
+        </div>
+
+        <div class="footer">Generated by Termux OSINT & Security Framework v2.0</div>
+    </div>
+</body>
+</html>
+    
