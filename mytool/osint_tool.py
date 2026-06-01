@@ -1,12 +1,18 @@
 """
-Termux OSINT & Advanced Security Framework v3.0
+Termux OSINT & Advanced Security Framework v4.0
 다양한 프로그래밍 언어를 지원하는 대규모 페이로드 라이브러리와 고도화된 보안 분석 기능을 갖춘 통합 프레임워크입니다.
 
-[신규 추가 언어 및 기능]
+[v3.0 기능]
 - Shell, Python, JavaScript, C, Java, Go, Ruby, Perl, C#, PHP 등 10종 이상의 언어 지원
 - 언어별 Reverse/Bind Shell, One-liners, Code Injection 페이로드
 - 웹 취약점(XSS, SQLi, LFI/RFI, SSTI) 언어별 우회 페이로드
 - 해킹 유틸리티 및 암호학 모듈 강화
+
+[v4.0 신규 추가 기능]
+- 이메일 검증: 형식 검사, MX 레코드 확인, HaveIBeenPwned 데이터 유출 여부 조회
+- 전화번호 검증: 국가 코드 식별, 통신사/지역 정보 조회 (공개 API 활용)
+- 소셜 미디어 사용자명(Username) 검색: 30개 이상 플랫폼 동시 조회
+- 웹사이트 종합 스캐닝: WHOIS 파싱 + crt.sh 서브도메인 + 기술 스택 + 보안 헤더 통합 분석
 """
 
 import os
@@ -53,7 +59,7 @@ def print_banner():
  | |_| / __/|  _ <| |_| | |___  | | | |\  |
   \\\\\\\\___/_____|_| \\\\_\\\\\\\\___/|_____| |_| |_| \\\\_|
 
-{Colors.YELLOW}    - Advanced Multi-Language Security Framework v3.0 -{Colors.RESET}
+{Colors.YELLOW}    - Advanced Multi-Language Security Framework v4.0 -{Colors.RESET}
 """
     print(banner)
     print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
@@ -1072,6 +1078,442 @@ def ssti_payload_generator():
         "Velocity (Java)": "#set($x=$request.getClass().forName('java.lang.Runtime').getMethod('getRuntime',null).invoke(null,null).exec('id'))"
     }
 
+# ============================================================
+# --- [v4.0 신규] 9. 이메일 / 전화번호 검증 모듈 ---
+# ============================================================
+
+def validate_email_format(email):
+    """이메일 주소 형식 유효성 검사"""
+    pattern = r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email.strip()))
+
+def check_email_mx(email):
+    """이메일 도메인의 MX 레코드 확인 (실제 수신 가능 여부)"""
+    try:
+        domain = email.split('@')[1]
+        result = subprocess.run(
+            ["nslookup", "-type=MX", domain],
+            capture_output=True, text=True, timeout=8
+        )
+        output = result.stdout
+        mx_records = re.findall(r'mail exchanger\s*=\s*(.+)', output, re.IGNORECASE)
+        if not mx_records:
+            mx_records = re.findall(r'MX preference\s*=\s*\d+,\s*mail exchanger\s*=\s*(.+)', output, re.IGNORECASE)
+        if mx_records:
+            return {"MX Records Found": [m.strip() for m in mx_records]}
+        else:
+            try:
+                ip = socket.gethostbyname(domain)
+                return {"Domain IP": ip, "Note": "MX 레코드 직접 파싱 실패, 도메인 IP만 확인됨"}
+            except:
+                return "MX 레코드 없음 (해당 도메인에서 이메일 수신 불가능할 수 있음)"
+    except Exception as e:
+        return f"MX 레코드 조회 실패: {e}"
+
+def check_email_hibp(email):
+    """HaveIBeenPwned API를 통한 이메일 데이터 유출 여부 확인"""
+    try:
+        headers = {"User-Agent": "OSINT-Framework-v4", "hibp-api-key": ""}
+        url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{urllib.parse.quote(email)}?truncateResponse=false"
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            breaches = response.json()
+            breach_list = [
+                {
+                    "Name": b.get("Name"),
+                    "Domain": b.get("Domain"),
+                    "BreachDate": b.get("BreachDate"),
+                    "PwnCount": b.get("PwnCount"),
+                    "DataClasses": b.get("DataClasses", [])
+                }
+                for b in breaches
+            ]
+            return {"Status": "PWNED", "Total Breaches": len(breach_list), "Breaches": breach_list}
+        elif response.status_code == 404:
+            return {"Status": "SAFE", "Message": "유출된 기록 없음 (HaveIBeenPwned 기준)"}
+        elif response.status_code == 401:
+            return {"Status": "API KEY REQUIRED", "Message": "HIBP API 키가 필요합니다. https://haveibeenpwned.com/API/Key 에서 발급 가능"}
+        elif response.status_code == 429:
+            return {"Status": "RATE LIMITED", "Message": "요청 한도 초과. 잠시 후 다시 시도하세요."}
+        else:
+            return {"Status": f"HTTP {response.status_code}", "Message": "조회 실패"}
+    except Exception as e:
+        return f"HIBP 조회 실패: {e}"
+
+def email_full_verification(email):
+    """이메일 종합 검증 (형식 + MX + HIBP 유출 여부)"""
+    print(f"{Colors.YELLOW}[*] 이메일 종합 검증 시작: {email}{Colors.RESET}")
+    result = {"Email": email}
+    fmt_ok = validate_email_format(email)
+    result["Format Valid"] = "유효함" if fmt_ok else "유효하지 않음 (형식 오류)"
+    if not fmt_ok:
+        return result
+    print(f"{Colors.YELLOW}  [1/2] MX 레코드 확인 중...{Colors.RESET}")
+    result["MX Record Check"] = check_email_mx(email)
+    print(f"{Colors.YELLOW}  [2/2] HaveIBeenPwned 유출 여부 확인 중...{Colors.RESET}")
+    result["Data Breach Check (HIBP)"] = check_email_hibp(email)
+    return result
+
+def validate_phone_number(phone):
+    """전화번호 형식 분석 및 국가 코드 식별"""
+    phone_clean = re.sub(r'[\s\-\(\)\.]', '', phone.strip())
+    country_codes = {
+        "+82": "대한민국 (KR)", "+1": "미국/캐나다 (US/CA)", "+44": "영국 (GB)",
+        "+81": "일본 (JP)", "+86": "중국 (CN)", "+49": "독일 (DE)",
+        "+33": "프랑스 (FR)", "+7": "러시아 (RU)", "+91": "인도 (IN)",
+        "+55": "브라질 (BR)", "+61": "호주 (AU)", "+39": "이탈리아 (IT)",
+        "+34": "스페인 (ES)", "+31": "네덜란드 (NL)", "+65": "싱가포르 (SG)",
+        "+66": "태국 (TH)", "+84": "베트남 (VN)", "+62": "인도네시아 (ID)",
+        "+60": "말레이시아 (MY)", "+886": "대만 (TW)", "+852": "홍콩 (HK)",
+        "+853": "마카오 (MO)", "+90": "터키 (TR)", "+20": "이집트 (EG)",
+        "+27": "남아프리카 (ZA)", "+52": "멕시코 (MX)", "+54": "아르헨티나 (AR)",
+        "+56": "칠레 (CL)", "+57": "콜롬비아 (CO)", "+380": "우크라이나 (UA)",
+        "+48": "폴란드 (PL)", "+46": "스웨덴 (SE)", "+47": "노르웨이 (NO)",
+        "+45": "덴마크 (DK)", "+358": "핀란드 (FI)", "+41": "스위스 (CH)",
+        "+43": "오스트리아 (AT)", "+32": "벨기에 (BE)", "+351": "포르투갈 (PT)",
+        "+30": "그리스 (GR)", "+420": "체코 (CZ)", "+36": "헝가리 (HU)",
+        "+40": "루마니아 (RO)", "+359": "불가리아 (BG)", "+385": "크로아티아 (HR)",
+        "+381": "세르비아 (RS)", "+63": "필리핀 (PH)", "+64": "뉴질랜드 (NZ)",
+        "+92": "파키스탄 (PK)", "+880": "방글라데시 (BD)", "+94": "스리랑카 (LK)",
+        "+98": "이란 (IR)", "+964": "이라크 (IQ)", "+966": "사우디아라비아 (SA)",
+        "+971": "아랍에미리트 (AE)", "+972": "이스라엘 (IL)",
+        "+234": "나이지리아 (NG)", "+254": "케냐 (KE)", "+212": "모로코 (MA)",
+        "+213": "알제리 (DZ)", "+216": "튀니지 (TN)",
+    }
+    result = {"Input": phone, "Cleaned": phone_clean, "Length": len(phone_clean.lstrip('+'))}
+    detected_country = "알 수 없음"
+    detected_code = ""
+    if phone_clean.startswith('+'):
+        for length in [4, 3, 2, 1]:
+            code_candidate = phone_clean[:length + 1]
+            if code_candidate in country_codes:
+                detected_country = country_codes[code_candidate]
+                detected_code = code_candidate
+                break
+        result["Country Code"] = detected_code if detected_code else "식별 불가"
+        result["Country"] = detected_country
+        result["Local Number"] = phone_clean[len(detected_code):] if detected_code else phone_clean[1:]
+    else:
+        if re.match(r'^01[016789]', phone_clean):
+            result["Country"] = "대한민국 (KR) - 추정"
+            result["Type"] = "휴대폰 번호"
+        elif phone_clean.startswith('02'):
+            result["Country"] = "대한민국 (KR) - 추정"
+            result["Type"] = "서울 지역 번호"
+        elif phone_clean.startswith('0'):
+            result["Country"] = "대한민국 (KR) - 추정"
+            result["Type"] = "지역 번호"
+        else:
+            result["Country"] = "알 수 없음"
+    if 7 <= len(phone_clean.lstrip('+')) <= 15:
+        result["Format Valid"] = "유효한 길이 (E.164 표준 범위 내)"
+    else:
+        result["Format Valid"] = "비정상적인 길이 (E.164 표준: 7~15자리)"
+    return result
+
+def phone_full_verification(phone):
+    """전화번호 종합 검증 (형식 분석 + 국가 코드 식별 + API 조회)"""
+    print(f"{Colors.YELLOW}[*] 전화번호 종합 검증 시작: {phone}{Colors.RESET}")
+    result = validate_phone_number(phone)
+    phone_clean = re.sub(r'[\s\-\(\)\.]', '', phone.strip())
+    if not phone_clean.startswith('+'):
+        phone_e164 = '+82' + phone_clean.lstrip('0')
+    else:
+        phone_e164 = phone_clean
+    # AbstractAPI 무료 플랜 시도
+    try:
+        abstract_url = f"https://phonevalidation.abstractapi.com/v1/?api_key=free&phone={urllib.parse.quote(phone_e164)}"
+        resp = requests.get(abstract_url, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get("valid"):
+                result["Carrier"] = data.get("carrier", "알 수 없음")
+                result["Line Type"] = data.get("type", "알 수 없음")
+                result["Location"] = data.get("location", "알 수 없음")
+                result["API Source"] = "AbstractAPI"
+    except:
+        pass
+    result["API Note"] = "상세 통신사/지역 조회는 NumVerify API 키 필요 (https://numverify.com)"
+    return result
+
+
+# ============================================================
+# --- [v4.0 신규] 10. 소셜 미디어 사용자명(Username) 검색 모듈 ---
+# ============================================================
+
+SOCIAL_PLATFORMS = {
+    "GitHub":           "https://github.com/{username}",
+    "Twitter/X":        "https://twitter.com/{username}",
+    "Instagram":        "https://www.instagram.com/{username}/",
+    "TikTok":           "https://www.tiktok.com/@{username}",
+    "YouTube":          "https://www.youtube.com/@{username}",
+    "Reddit":           "https://www.reddit.com/user/{username}",
+    "Pinterest":        "https://www.pinterest.com/{username}/",
+    "LinkedIn":         "https://www.linkedin.com/in/{username}",
+    "Twitch":           "https://www.twitch.tv/{username}",
+    "Steam":            "https://steamcommunity.com/id/{username}",
+    "Keybase":          "https://keybase.io/{username}",
+    "Pastebin":         "https://pastebin.com/u/{username}",
+    "Medium":           "https://medium.com/@{username}",
+    "Dev.to":           "https://dev.to/{username}",
+    "HackerNews":       "https://news.ycombinator.com/user?id={username}",
+    "GitLab":           "https://gitlab.com/{username}",
+    "Bitbucket":        "https://bitbucket.org/{username}/",
+    "Gravatar":         "https://en.gravatar.com/{username}",
+    "Flickr":           "https://www.flickr.com/people/{username}",
+    "Vimeo":            "https://vimeo.com/{username}",
+    "Soundcloud":       "https://soundcloud.com/{username}",
+    "Spotify":          "https://open.spotify.com/user/{username}",
+    "Behance":          "https://www.behance.net/{username}",
+    "Dribbble":         "https://dribbble.com/{username}",
+    "ProductHunt":      "https://www.producthunt.com/@{username}",
+    "HackerOne":        "https://hackerone.com/{username}",
+    "BugCrowd":         "https://bugcrowd.com/{username}",
+    "DockerHub":        "https://hub.docker.com/u/{username}",
+    "NPM":              "https://www.npmjs.com/~{username}",
+    "PyPI":             "https://pypi.org/user/{username}/",
+}
+
+NOT_FOUND_KEYWORDS = {
+    "GitHub":       ["Not Found", "This is not the web page"],
+    "Instagram":    ["Sorry, this page", "Page Not Found"],
+    "Twitter/X":    ["This account doesn't exist", "Sorry, that page doesn't exist"],
+    "TikTok":       ["Couldn't find this account"],
+    "Reddit":       ["Sorry, nobody on Reddit goes by that name"],
+    "LinkedIn":     ["Page not found"],
+    "Twitch":       ["Sorry. Unless you've got a time machine"],
+    "HackerNews":   ["No such user"],
+    "Pastebin":     ["Not Found"],
+    "Keybase":      ["Not Found"],
+}
+
+def check_username_on_platform(username, platform_name, url_template):
+    """단일 플랫폼에서 사용자명 존재 여부 확인"""
+    url = url_template.format(username=username)
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        response = requests.get(url, headers=headers, timeout=8, allow_redirects=True)
+        status = response.status_code
+        if status == 404:
+            return {"platform": platform_name, "url": url, "status": "NOT FOUND", "http": 404}
+        elif status == 200:
+            not_found_kws = NOT_FOUND_KEYWORDS.get(platform_name, [])
+            for kw in not_found_kws:
+                if kw.lower() in response.text.lower():
+                    return {"platform": platform_name, "url": url, "status": "NOT FOUND (keyword)", "http": 200}
+            return {"platform": platform_name, "url": url, "status": "FOUND", "http": 200}
+        elif status in [301, 302, 403]:
+            return {"platform": platform_name, "url": url, "status": f"POSSIBLE ({status})", "http": status}
+        else:
+            return {"platform": platform_name, "url": url, "status": f"UNKNOWN ({status})", "http": status}
+    except requests.exceptions.Timeout:
+        return {"platform": platform_name, "url": url, "status": "TIMEOUT", "http": None}
+    except Exception as e:
+        return {"platform": platform_name, "url": url, "status": f"ERROR: {str(e)[:40]}", "http": None}
+
+def username_search(username, selected_platforms=None):
+    """여러 플랫폼에서 사용자명 존재 여부 일괄 검색"""
+    if not username or not re.match(r'^[a-zA-Z0-9._\-]{1,50}$', username):
+        return {"Error": "유효하지 않은 사용자명입니다. (영문, 숫자, ., _, - 만 허용, 1~50자)"}
+    platforms = selected_platforms if selected_platforms else SOCIAL_PLATFORMS
+    results = {"Username": username, "Scanned": len(platforms), "Found": [], "Not Found": [], "Possible": [], "Error": []}
+    print(f"{Colors.YELLOW}[*] '{username}' 사용자명 검색 시작 ({len(platforms)}개 플랫폼)...{Colors.RESET}")
+    for platform_name, url_template in platforms.items():
+        print(f"  {Colors.CYAN}[검색중]{Colors.RESET} {platform_name}...", end="\r")
+        res = check_username_on_platform(username, platform_name, url_template)
+        status = res["status"]
+        if status == "FOUND":
+            results["Found"].append({"platform": platform_name, "url": res["url"]})
+            print(f"  {Colors.GREEN}[FOUND]   {Colors.RESET} {platform_name}: {res['url']}")
+        elif "NOT FOUND" in status:
+            results["Not Found"].append(platform_name)
+            print(f"  {Colors.RED}[NOT FOUND]{Colors.RESET} {platform_name}")
+        elif "POSSIBLE" in status:
+            results["Possible"].append({"platform": platform_name, "url": res["url"], "note": status})
+            print(f"  {Colors.YELLOW}[POSSIBLE]{Colors.RESET} {platform_name}: {res['url']}")
+        else:
+            results["Error"].append({"platform": platform_name, "note": status})
+            print(f"  {Colors.MAGENTA}[ERROR]   {Colors.RESET} {platform_name}: {status}")
+        time.sleep(0.3)
+    print(f"\n{Colors.GREEN}[+] 검색 완료: {len(results['Found'])}개 플랫폼에서 발견됨{Colors.RESET}")
+    return results
+
+
+# ============================================================
+# --- [v4.0 신규] 11. 웹사이트 종합 스캐닝 모듈 ---
+# ============================================================
+
+def website_whois_scan(domain):
+    """도메인 WHOIS 정보 상세 파싱"""
+    try:
+        raw = get_whois_info(domain)
+        if "실패" in str(raw):
+            return raw
+        parsed = {}
+        patterns = {
+            "Registrar":          r"Registrar:\s*(.+)",
+            "Registrant Org":     r"Registrant Organization:\s*(.+)",
+            "Registrant Country": r"Registrant Country:\s*(.+)",
+            "Creation Date":      r"Creation Date:\s*(.+)",
+            "Updated Date":       r"Updated Date:\s*(.+)",
+            "Expiry Date":        r"Registry Expiry Date:\s*(.+)",
+            "Name Servers":       r"Name Server:\s*(.+)",
+            "DNSSEC":             r"DNSSEC:\s*(.+)",
+            "Status":             r"Domain Status:\s*(.+)",
+        }
+        for key, pattern in patterns.items():
+            matches = re.findall(pattern, raw, re.IGNORECASE)
+            if matches:
+                if key in ["Name Servers", "Status"]:
+                    parsed[key] = list(set([m.strip() for m in matches]))
+                else:
+                    parsed[key] = matches[0].strip()
+        parsed["Raw (First 500 chars)"] = raw[:500].strip()
+        return parsed if len(parsed) > 1 else {"Raw WHOIS": raw[:1000]}
+    except Exception as e:
+        return f"WHOIS 파싱 실패: {e}"
+
+def website_subdomain_advanced(domain):
+    """서브도메인 탐지 (확장 워드리스트 + crt.sh 인증서 투명성 활용)"""
+    found = []
+    common = [
+        "www", "blog", "mail", "ftp", "dev", "admin", "api", "test", "webmail",
+        "cpanel", "ns1", "ns2", "shop", "secure", "vpn", "m", "app", "portal",
+        "beta", "staging", "prod", "cdn", "static", "media", "img", "images",
+        "video", "docs", "help", "support", "status", "monitor", "dashboard",
+        "auth", "login", "sso", "oauth", "git", "svn", "jenkins", "ci", "jira",
+        "confluence", "wiki", "forum", "community", "news", "store", "pay",
+        "payment", "billing", "invoice", "smtp", "pop", "imap", "exchange",
+        "remote", "vpn2", "proxy", "gateway", "db", "database", "mysql",
+        "redis", "mongo", "elastic", "kibana", "grafana", "backup", "archive",
+        "old", "new", "v1", "v2", "v3", "sandbox", "demo", "preview",
+        "internal", "intranet", "corp", "mobile", "ios", "android",
+        "api2", "api3", "graphql", "rest", "cloud", "aws", "azure", "gcp"
+    ]
+    print(f"{Colors.YELLOW}  [1/2] DNS 브루트포스 ({len(common)}개 서브도메인)...{Colors.RESET}")
+    for sub in common:
+        try:
+            target = f"{sub}.{domain}"
+            ip = socket.gethostbyname(target)
+            found.append({"subdomain": target, "ip": ip, "source": "DNS Brute"})
+        except:
+            pass
+    print(f"{Colors.YELLOW}  [2/2] crt.sh 인증서 투명성 로그 조회...{Colors.RESET}")
+    try:
+        crt_url = f"https://crt.sh/?q=%.{domain}&output=json"
+        resp = requests.get(crt_url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
+        if resp.status_code == 200:
+            crt_data = resp.json()
+            crt_subdomains = set()
+            for entry in crt_data:
+                name_value = entry.get("name_value", "")
+                for name in name_value.split("\n"):
+                    name = name.strip().lstrip("*.")
+                    if name.endswith(f".{domain}") or name == domain:
+                        crt_subdomains.add(name)
+            existing = {item["subdomain"] for item in found}
+            for sub in crt_subdomains:
+                if sub not in existing and sub != domain:
+                    try:
+                        ip = socket.gethostbyname(sub)
+                        found.append({"subdomain": sub, "ip": ip, "source": "crt.sh"})
+                    except:
+                        found.append({"subdomain": sub, "ip": "N/A (DNS 미해결)", "source": "crt.sh"})
+    except Exception:
+        pass
+    if found:
+        return {"Total Found": len(found), "Subdomains": found}
+    return "서브도메인을 찾을 수 없습니다."
+
+def website_tech_stack_full(url):
+    """웹사이트 기술 스택 상세 분석 (헤더 + HTML + 쿠키 + 스크립트)"""
+    tech_info = {}
+    try:
+        if not url.startswith("http"):
+            url = "http://" + url
+        response = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        soup = BeautifulSoup(response.text, "html.parser")
+        headers = response.headers
+        if headers.get("Server"): tech_info["Server"] = headers["Server"]
+        if headers.get("X-Powered-By"): tech_info["X-Powered-By"] = headers["X-Powered-By"]
+        if headers.get("X-Generator"): tech_info["X-Generator"] = headers["X-Generator"]
+        if headers.get("X-Drupal-Cache"): tech_info["CMS"] = "Drupal"
+        if headers.get("X-Shopify-Stage"): tech_info["Platform"] = "Shopify"
+        for meta in soup.find_all("meta"):
+            if meta.get("name", "").lower() == "generator":
+                tech_info["Generator (Meta)"] = meta.get("content", "")
+        js_libs = []
+        for script in soup.find_all("script", src=True):
+            src = script["src"].lower()
+            if "jquery" in src: js_libs.append("jQuery")
+            if "react" in src: js_libs.append("React")
+            if "vue" in src: js_libs.append("Vue.js")
+            if "angular" in src: js_libs.append("Angular")
+            if "bootstrap" in src: js_libs.append("Bootstrap")
+            if "lodash" in src: js_libs.append("Lodash")
+            if "moment" in src: js_libs.append("Moment.js")
+            if "axios" in src: js_libs.append("Axios")
+            if "next" in src: js_libs.append("Next.js")
+            if "nuxt" in src: js_libs.append("Nuxt.js")
+            if "svelte" in src: js_libs.append("Svelte")
+            if "gsap" in src: js_libs.append("GSAP")
+            if "three" in src: js_libs.append("Three.js")
+        if js_libs: tech_info["JS Libraries/Frameworks"] = list(set(js_libs))
+        page_text = response.text.lower()
+        if "wp-content" in page_text or "wp-json" in page_text: tech_info["CMS"] = "WordPress"
+        elif "joomla" in page_text: tech_info["CMS"] = "Joomla"
+        elif "drupal" in page_text: tech_info["CMS"] = "Drupal"
+        elif "shopify" in page_text: tech_info["Platform"] = "Shopify"
+        elif "wix.com" in page_text: tech_info["Platform"] = "Wix"
+        elif "squarespace" in page_text: tech_info["Platform"] = "Squarespace"
+        elif "ghost.org" in page_text: tech_info["CMS"] = "Ghost"
+        cookies = response.cookies
+        cookie_names = [c.name for c in cookies]
+        if cookie_names: tech_info["Cookies"] = cookie_names
+        if any("PHPSESSID" in c for c in cookie_names): tech_info["Backend Language"] = "PHP"
+        if any("JSESSIONID" in c for c in cookie_names): tech_info["Backend Language"] = "Java (Servlet)"
+        if any("ASP.NET_SessionId" in c for c in cookie_names): tech_info["Backend Language"] = "ASP.NET"
+        cdn_map = {"cloudflare": "Cloudflare", "fastly": "Fastly", "akamai": "Akamai", "cloudfront": "AWS CloudFront"}
+        for h_key, cdn_name in cdn_map.items():
+            if any(h_key in k.lower() for k in headers.keys()):
+                tech_info["CDN"] = cdn_name
+                break
+        return tech_info if tech_info else "기술 스택 정보를 감지할 수 없습니다."
+    except Exception as e:
+        return f"기술 스택 분석 실패: {e}"
+
+def website_full_scan(target_url):
+    """웹사이트 종합 스캐닝 (WHOIS + 서브도메인 + 기술 스택 + 보안 헤더 + SSL)"""
+    if not target_url.startswith("http"):
+        domain = target_url
+        url = "http://" + target_url
+    else:
+        from urllib.parse import urlparse
+        domain = urlparse(target_url).netloc
+        url = target_url
+    print(f"{Colors.GREEN}[*] 웹사이트 종합 스캔 시작: {domain}{Colors.RESET}")
+    result = {"Target": domain, "URL": url}
+    print(f"{Colors.YELLOW}[1/5] WHOIS 정보 조회 중...{Colors.RESET}")
+    result["WHOIS"] = website_whois_scan(domain)
+    print(f"{Colors.YELLOW}[2/5] 서브도메인 탐지 중...{Colors.RESET}")
+    result["Subdomains"] = website_subdomain_advanced(domain)
+    print(f"{Colors.YELLOW}[3/5] 기술 스택 분석 중...{Colors.RESET}")
+    result["Tech Stack"] = website_tech_stack_full(url)
+    print(f"{Colors.YELLOW}[4/5] 보안 헤더 및 WAF 분석 중...{Colors.RESET}")
+    result["Security Headers"] = security_headers_check(url)
+    result["WAF Detection"] = waf_detector(url)
+    result["SSL Certificate"] = get_ssl_info(domain)
+    print(f"{Colors.YELLOW}[5/5] DNS 및 IP 정보 조회 중...{Colors.RESET}")
+    dns_info = get_dns_info(domain)
+    result["DNS Info"] = dns_info
+    if isinstance(dns_info, dict) and "IP Address" in dns_info:
+        ip = dns_info["IP Address"]
+        result["IP Geolocation"] = get_ip_geolocation(ip)
+        result["Reverse IP"] = reverse_ip_lookup(ip)
+    print(f"\n{Colors.GREEN}[+] 웹사이트 종합 스캔 완료!{Colors.RESET}")
+    return result
+
+
 # --- Main Scan & HTML Report Generation (기존 기능 통합) ---
 
 def generate_html_report(target, data):
@@ -1419,6 +1861,10 @@ def show_help():
     print(f"{Colors.WHITE}  - 네트워크 보안 도구: 포트 스캔, 정밀 서비스 버전 감지, FTP 익명 로그인, Traceroute, Ping Sweep, 네트워크 지연 시간 등을 확인합니다.\n")
     print(f"{Colors.WHITE}  - 암호학 & 유틸리티: 해시 생성/식별/크래킹, 인코딩/디코딩, 패스워드 생성, IP 계산기, Epoch 변환 등을 제공합니다.\n")
     print(f"{Colors.WHITE}  - 멀티 언어 페이로드 라이브러리: 다양한 언어의 리버스 쉘/바인드 쉘 페이로드, 웹 취약점 우회 페이로드 등을 생성하고 Termux 환경에서의 제약사항을 안내합니다.\n")
+    print(f"{Colors.CYAN}[v4.0 신규 기능]{Colors.RESET}")
+    print(f"{Colors.WHITE}  - 이메일/전화번호 검증 (8번): 이메일 형식 검사, MX 레코드 확인, HaveIBeenPwned 데이터 유출 여부 조회 / 전화번호 국가 코드 식별 및 통신사 정보 조회.\n")
+    print(f"{Colors.WHITE}  - 소셜 미디어 사용자명 검색 (9번): GitHub, Instagram, Twitter/X, TikTok, YouTube, Reddit 등 30개 이상 플랫폼에서 사용자명 존재 여부 일괄 조회.\n")
+    print(f"{Colors.WHITE}  - 웹사이트 종합 스캐닝 (10번): WHOIS 상세 파싱, crt.sh 인증서 투명성 로그 기반 서브도메인 탐지, 기술 스택 상세 분석, 보안 헤더 점검 통합 수행.\n")
     print(f"{Colors.WHITE}  - 'B' 또는 'b'를 입력하여 이전 메뉴로 돌아갈 수 있습니다.\n")
     print(f"{Colors.WHITE}  - '0'을 입력하여 도구를 종료할 수 있습니다.\n")
     print(f"{Colors.RED}주의: 이 도구는 교육 및 보안 학습 목적으로 제작되었습니다. 타인의 동의 없이 무단으로 정보를 수집하거나 악용하는 행위는 법적 문제를 야기할 수 있습니다. 항상 윤리적이고 합법적인 범위 내에서 사용하십시오.{Colors.RESET}\n")
@@ -1427,7 +1873,7 @@ def show_help():
 def main():
     while True:
         print_banner()
-        print(f"{Colors.YELLOW}{Colors.BOLD}메인 메뉴 (V3.0 Advanced):{Colors.RESET}")
+        print(f"{Colors.YELLOW}{Colors.BOLD}메인 메뉴 (V4.0 Advanced):{Colors.RESET}")
         print(f"{Colors.GREEN}  1. 종합 OSINT & 보안 스캔 (HTML 보고서 생성){Colors.RESET}")
         print(f"{Colors.GREEN}  2. 정보 수집 도구{Colors.RESET}")
         print(f"{Colors.GREEN}  3. 웹 분석 및 고도화 취약점 스캔 도구{Colors.RESET}")
@@ -1435,7 +1881,10 @@ def main():
         print(f"{Colors.GREEN}  5. 암호학 & 유틸리티{Colors.RESET}")
         print(f"{Colors.GREEN}  6. 멀티 언어 페이로드 라이브러리{Colors.RESET}")
         print(f"{Colors.GREEN}  7. 웹 해킹 및 취약점 우회 도구{Colors.RESET}")
-        print(f"{Colors.GREEN}  8. 도움말{Colors.RESET}")
+        print(f"{Colors.CYAN}  8. [NEW] 이메일 / 전화번호 검증{Colors.RESET}")
+        print(f"{Colors.CYAN}  9. [NEW] 소셜 미디어 사용자명 검색{Colors.RESET}")
+        print(f"{Colors.CYAN}  10. [NEW] 웹사이트 종합 스캐닝{Colors.RESET}")
+        print(f"{Colors.GREEN}  11. 도움말{Colors.RESET}")
         print(f"{Colors.RED}  0. 종료{Colors.RESET}")
         print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
         
@@ -1618,7 +2067,98 @@ def main():
                 else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
                 input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
 
-        elif choice == '8':
+        elif choice == '8':  # [NEW] 이메일 / 전화번호 검증
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 이메일 / 전화번호 검증:{Colors.RESET}")
+                print(f"{Colors.GREEN}  8.1. 이메일 종합 검증 (형식 + MX + HIBP 유출 여부){Colors.RESET}")
+                print(f"{Colors.GREEN}  8.2. 전화번호 형식 분석 및 국가 코드 식별{Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (8.1-8.2, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                if sub_choice == '8.1':
+                    email = input(f"{Colors.CYAN}검증할 이메일 주소를 입력하세요: {Colors.RESET}").strip()
+                    if email:
+                        print_result("이메일 종합 검증 결과", email_full_verification(email), Colors.CYAN)
+                    else:
+                        print(f"{Colors.RED}이메일 주소를 입력해주세요.{Colors.RESET}")
+                elif sub_choice == '8.2':
+                    phone = input(f"{Colors.CYAN}검증할 전화번호를 입력하세요 (예: +821012345678 또는 01012345678): {Colors.RESET}").strip()
+                    if phone:
+                        print_result("전화번호 검증 결과", phone_full_verification(phone), Colors.CYAN)
+                    else:
+                        print(f"{Colors.RED}전화번호를 입력해주세요.{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '9':  # [NEW] 소셜 미디어 사용자명 검색
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 소셜 미디어 사용자명(Username) 검색:{Colors.RESET}")
+                print(f"{Colors.GREEN}  9.1. 전체 플랫폼 검색 (30개 이상){Colors.RESET}")
+                print(f"{Colors.GREEN}  9.2. 개발자 플랫폼만 검색 (GitHub, GitLab, Bitbucket, NPM, PyPI, DockerHub){Colors.RESET}")
+                print(f"{Colors.GREEN}  9.3. 소셜 미디어만 검색 (Instagram, Twitter/X, TikTok, YouTube, Reddit 등){Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (9.1-9.3, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                username = input(f"{Colors.CYAN}검색할 사용자명(Username)을 입력하세요: {Colors.RESET}").strip()
+                if not username:
+                    print(f"{Colors.RED}사용자명을 입력해주세요.{Colors.RESET}")
+                    input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+                    continue
+                if sub_choice == '9.1':
+                    print_result("사용자명 검색 결과", username_search(username), Colors.CYAN)
+                elif sub_choice == '9.2':
+                    dev_platforms = {k: v for k, v in SOCIAL_PLATFORMS.items() if k in ["GitHub", "GitLab", "Bitbucket", "NPM", "PyPI", "DockerHub", "HackerOne", "BugCrowd", "Dev.to", "HackerNews", "Keybase"]}
+                    print_result("개발자 플랫폼 검색 결과", username_search(username, dev_platforms), Colors.CYAN)
+                elif sub_choice == '9.3':
+                    social_platforms = {k: v for k, v in SOCIAL_PLATFORMS.items() if k in ["Instagram", "Twitter/X", "TikTok", "YouTube", "Reddit", "Pinterest", "LinkedIn", "Twitch", "Medium", "Soundcloud", "Spotify", "Behance", "Dribbble", "Flickr", "Vimeo", "Steam"]}
+                    print_result("소셜 미디어 검색 결과", username_search(username, social_platforms), Colors.CYAN)
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '10':  # [NEW] 웹사이트 종합 스캐닝
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 웹사이트 종합 스캐닝:{Colors.RESET}")
+                print(f"{Colors.GREEN}  10.1. 웹사이트 종합 스캔 (WHOIS + 서브도메인 + 기술스택 + 보안헤더 + SSL){Colors.RESET}")
+                print(f"{Colors.GREEN}  10.2. WHOIS 상세 파싱{Colors.RESET}")
+                print(f"{Colors.GREEN}  10.3. 서브도메인 탐지 (DNS 브루트포스 + crt.sh){Colors.RESET}")
+                print(f"{Colors.GREEN}  10.4. 기술 스택 상세 분석{Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (10.1-10.4, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                target = input(f"{Colors.CYAN}대상 도메인 또는 URL을 입력하세요 (예: example.com): {Colors.RESET}").strip()
+                if not target:
+                    print(f"{Colors.RED}대상을 입력해주세요.{Colors.RESET}")
+                    input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+                    continue
+                if sub_choice == '10.1':
+                    print_result("웹사이트 종합 스캔 결과", website_full_scan(target), Colors.CYAN)
+                elif sub_choice == '10.2':
+                    domain = target.replace("http://", "").replace("https://", "").split("/")[0]
+                    print_result("WHOIS 상세 파싱 결과", website_whois_scan(domain), Colors.CYAN)
+                elif sub_choice == '10.3':
+                    domain = target.replace("http://", "").replace("https://", "").split("/")[0]
+                    print_result("서브도메인 탐지 결과", website_subdomain_advanced(domain), Colors.CYAN)
+                elif sub_choice == '10.4':
+                    print_result("기술 스택 분석 결과", website_tech_stack_full(target), Colors.CYAN)
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '11':
             show_help()
         elif choice == '0':
             print(f"{Colors.RED}도구를 종료합니다. 안녕히 계세요!{Colors.RESET}")
