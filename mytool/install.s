@@ -10,7 +10,7 @@ CYAN='\033[96m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-echo -e "${CYAN}${BOLD}[*] v17.0 Ghost-Mirror 패키지 및 터널링 엔진 설치 시작...${RESET}"
+echo -e "${CYAN}${BOLD}[*] v18.0 Ghost-Mirror 패키지 및 터널링 엔진 설치 시작...${RESET}"
 
 # Termux 여부 확인
 IS_TERMUX=false
